@@ -37,6 +37,20 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Hibernate Envers: guarda o historico de mudancas das entidades
+             marcadas com @Audited em tabelas *_aud. -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-envers</artifactId>
+        </dependency>
+
+        <!-- Integracao do Spring Data com o Envers: e o que nos da o
+             RevisionRepository (findRevisions etc.) nos repositorios. -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-envers</artifactId>
+        </dependency>
+
         <!-- Seguranca: filtros, contexto de autenticacao, BCrypt -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
