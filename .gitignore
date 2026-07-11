@@ -1,0 +1,27 @@
+# Java / Maven
+backend/target/
+*.class
+
+# Banco H2 em arquivo (dados locais, nao vao pro repositorio)
+backend/data/
+
+# PDFs (entregas e documentos nao vao pro repositorio)
+*.pdf
+*.PDF
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Logs e variaveis de ambiente
+*.log
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Imagem de referencia de design (nao faz parte do app)
+frontend/src/original-*.webp
