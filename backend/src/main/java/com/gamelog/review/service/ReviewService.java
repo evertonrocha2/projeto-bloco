@@ -6,7 +6,9 @@ import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
 import com.gamelog.review.domain.Review;
 import com.gamelog.review.dto.CreateReviewRequest;
+import com.gamelog.review.dto.GameRatingRow;
 import com.gamelog.review.dto.RatingStats;
+import com.gamelog.review.dto.ReviewRevisionResponse;
 import com.gamelog.review.dto.ReviewResponse;
 import com.gamelog.review.repository.ReviewRepository;
 import com.gamelog.shared.BadRequestException;
@@ -14,11 +16,15 @@ import com.gamelog.shared.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-// Concentra tudo que envolve reviews: criar uma nova, listar as de um jogo,
-// listar as de um usuario e calcular a media de notas. Como uma review liga
-// usuario e jogo, esse service conversa com os tres repositorios.
+// Concentra tudo que envolve reviews: criar, editar, apagar, listar, calcular
+// medias e consultar o historico de mudancas. Como uma review liga usuario e
+// jogo, esse service conversa com os tres repositorios.
 @Service
 public class ReviewService {
 
@@ -58,6 +64,40 @@ public class ReviewService {
         return ReviewResponse.from(review);
     }
 
+    // Editar review: so o autor pode, e so nota e texto mudam. O Envers grava
+    // automaticamente uma revisao UPDATE com o estado novo - e assim que o
+    // historico "acontece", sem nenhum codigo extra aqui.
+    @Transactional
+    public ReviewResponse update(String username, Long reviewId, CreateReviewRequest request) {
+        Review review = findOwnedReview(username, reviewId);
+
+        if (request.rating() < 0 || request.rating() > 5) {
+            throw new BadRequestException("A nota deve estar entre 0 e 5");
+        }
+
+        review.update(request.rating(), request.text());
+        reviewRepository.save(review);
+        return ReviewResponse.from(review);
+    }
+
+    // Apagar review: o Envers registra uma revisao DELETE, entao mesmo apagada
+    // a review continua consultavel no historico (trilha de auditoria).
+    @Transactional
+    public void delete(String username, Long reviewId) {
+        Review review = findOwnedReview(username, reviewId);
+        reviewRepository.delete(review);
+    }
+
+    // Linha do tempo de uma review: cada revisao traz o estado daquele momento
+    // mais quem mudou e quando. Vem do RevisionRepository (Envers).
+    @Transactional(readOnly = true)
+    public List<ReviewRevisionResponse> history(String username, Long reviewId) {
+        findOwnedReview(username, reviewId);
+        return reviewRepository.findRevisions(reviewId).stream()
+                .map(ReviewRevisionResponse::from)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public List<ReviewResponse> findByGame(Long gameId) {
         return reviewRepository.findByGameIdOrderByCreatedAtDesc(gameId).stream()
@@ -72,18 +112,31 @@ public class ReviewService {
                 .toList();
     }
 
-    // Calcula media e contagem das notas de um jogo. Como o catalogo e pequeno,
-    // somar em memoria aqui e suficiente e simples de entender.
+    // Media e contagem de UM jogo, calculadas pelo banco (AVG/COUNT).
     @Transactional(readOnly = true)
     public RatingStats statsForGame(Long gameId) {
-        List<Review> reviews = reviewRepository.findByGameIdOrderByCreatedAtDesc(gameId);
-        if (reviews.isEmpty()) {
-            return RatingStats.empty();
+        return statsForGames(List.of(gameId)).getOrDefault(gameId, RatingStats.empty());
+    }
+
+    // Media e contagem de VARIOS jogos numa consulta so. O catalogo usa isso
+    // pra montar todos os cards sem cair no problema N+1 (um SELECT por jogo).
+    @Transactional(readOnly = true)
+    public Map<Long, RatingStats> statsForGames(Collection<Long> gameIds) {
+        if (gameIds.isEmpty()) {
+            return Map.of();
         }
-        double average = reviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
-        return new RatingStats(average, reviews.size());
+        return reviewRepository.aggregateByGameIds(gameIds).stream()
+                .collect(Collectors.toMap(GameRatingRow::gameId, GameRatingRow::toStats));
+    }
+
+    // Carrega a review e garante que ela pertence a quem esta chamando.
+    // Editar/apagar/ver historico sao operacoes so do autor.
+    private Review findOwnedReview(String username, Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Review nao encontrada"));
+        if (!review.getUser().getUsername().equals(username)) {
+            throw new BadRequestException("Essa review nao e sua");
+        }
+        return review;
     }
 }
