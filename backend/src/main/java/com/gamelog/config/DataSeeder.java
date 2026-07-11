@@ -14,10 +14,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-// Como o banco H2 e em memoria, ele nasce vazio toda vez que a aplicacao sobe.
-// Esse CommandLineRunner roda automaticamente no startup e popula o catalogo
-// buscando jogos numa API externa, mais um usuario de demonstracao com algumas
-// reviews. Assim a tela ja abre com conteudo de verdade.
+// Popula o banco na PRIMEIRA vez que a aplicacao sobe: catalogo vindo de uma
+// API externa + um usuario de demonstracao com reviews. Como agora o banco e
+// persistido em arquivo, nas proximas execucoes ele ja vem com dados e o
+// seeder nao faz nada (checagem de count logo abaixo) - e idempotente.
 @Component
 public class DataSeeder implements CommandLineRunner {
 
@@ -49,8 +49,13 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
 
-        // Primeiro tenta puxar da API externa.
-        List<Game> imported = gameImportService.importPopularGames(24);
+        // Primeiro tenta puxar da API externa. O filtro por externalId e uma
+        // defesa extra contra duplicar jogo que ja existe no banco (aproveita
+        // o indice idx_games_external_id).
+        List<Game> imported = gameImportService.importPopularGames(24).stream()
+                .filter(game -> game.getExternalId() == null
+                        || gameRepository.findByExternalId(game.getExternalId()).isEmpty())
+                .toList();
 
         // Se a API respondeu, usa o que veio dela; senao cai pra uma lista local
         // de seguranca pra app nunca abrir sem nenhum jogo.
