@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Tema claro, moderno e minimalista (inspirado em landings SaaS): muito branco, */
+/* cinzas suaves, um acento discreto. No Tailwind v4 a config fica aqui no CSS - */
+/* cada --color-* vira utilitario (bg-mist, text-slate, etc).                     */
+@theme {
+  --color-canvas: #ffffff;   /* fundo principal */
+  --color-mist: #f6f7f9;     /* faixas/seções claras */
+  --color-line: #e7e9ee;     /* bordas */
+  --color-ink: #0e1116;      /* títulos / texto forte */
+  --color-slate: #5b6472;    /* texto de apoio */
+  --color-accent: #6366f1;   /* acento (indigo), usado com parcimônia */
+  --color-accent-soft: #eef0fe;
+
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --animate-marquee: marquee 32s linear infinite;
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* Reduz a base de 16px pra 15px: como o Tailwind usa rem, isso encolhe TODOS */
+/* os tamanhos (fonte, espacamento) de forma proporcional - a interface inteira */
+/* fica um pouco menor e mais respirada de uma vez so.                           */
+html {
+  font-size: 15px;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
