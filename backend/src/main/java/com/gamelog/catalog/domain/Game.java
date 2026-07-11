@@ -1,16 +1,27 @@
 package com.gamelog.catalog.domain;
 
+import com.gamelog.shared.persistence.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 
 // Um jogo do catalogo. E sobre ele que os usuarios escrevem reviews.
+//
+// Os indices foram escolhidos a partir das consultas que a aplicacao faz:
+// - idx_games_title: a busca do catalogo filtra por titulo (LIKE); sem indice
+//   o banco varre a tabela inteira a cada busca.
+// - idx_games_external_id: o import da RAWG confere se o jogo ja existe pelo
+//   externalId antes de inserir.
 @Entity
-@Table(name = "games")
-public class Game {
+@Table(name = "games", indexes = {
+        @Index(name = "idx_games_title", columnList = "title"),
+        @Index(name = "idx_games_external_id", columnList = "external_id")
+})
+public class Game extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +30,7 @@ public class Game {
     // Id do jogo la na API externa (RAWG). Guardamos pra conseguir buscar a
     // descricao completa sob demanda depois (lazy load), sem precisar baixar
     // tudo de uma vez no startup.
+    @Column(name = "external_id")
     private Long externalId;
 
     @Column(nullable = false)
