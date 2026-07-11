@@ -5,9 +5,15 @@ Um "Letterboxd de jogos": os usuários navegam por um catálogo, deixam avaliaç
 tudo o que eles já avaliaram. O catálogo é puxado de uma API externa de jogos
 (a [RAWG](https://rawg.io/apidocs)), com nota, gêneros e descrição.
 
-Projeto de Bloco 01 — um **monólito modular** (Arquitetura Modular) em Spring Boot
+Projeto de Bloco — um **monólito modular** (Arquitetura Modular) em Spring Boot
 com front-end React: dividido em módulos por funcionalidade, com camadas
 (controller/service/repository) dentro de cada um e subdomínios baseados em DDD.
+
+**TP2 — Camada de persistência real:** banco persistido em arquivo (os dados
+sobrevivem ao restart), auditoria automática de datas, **histórico de mudanças**
+de reviews e coleção (Hibernate Envers), consultas otimizadas (paginação e
+agregação no banco) e 21 testes automatizados da camada de persistência.
+Detalhes em [`docs/PERSISTENCIA.md`](docs/PERSISTENCIA.md).
 
 ---
 
@@ -16,7 +22,8 @@ com front-end React: dividido em módulos por funcionalidade, com camadas
 | Camada | Tecnologia |
 |--------|-----------|
 | Back-end | Java 21, Spring Boot 3, Spring Web, Spring Data JPA, Spring Security |
-| Banco | H2 (em memória) |
+| Banco | H2 (persistido em arquivo, `backend/data/`) |
+| Histórico | Hibernate Envers + Spring Data Envers |
 | Autenticação | JWT + BCrypt |
 | API externa | RAWG (catálogo de jogos) |
 | Build back-end | Maven |
@@ -69,21 +76,26 @@ navegar pro catálogo, abrir um jogo, ver perfis e fazer login.
 - Coleção de jogos: marque um jogo como seu, com horas jogadas e status
   (Quero jogar / Jogando / Zerado / Largado)
 - Perfil público de qualquer usuário, com abas de avaliações e coleção
+- Editar e apagar a própria avaliação
+- **Histórico de mudanças**: toda alteração em review ou item da coleção fica
+  registrada (o quê, quando e quem) e pode ser consultada pela API
 
 ---
 
 ## Estrutura do projeto
 
 ```
-projeto-bloco-01/
+projeto-bloco-02/
 ├── backend/      → API REST (Spring Boot)
+│   └── data/     → arquivos do banco H2 (criados na primeira execução)
 ├── frontend/     → Interface (React)
-├── docs/         → Documentação da arquitetura (diagramas)
+├── docs/         → Documentação (arquitetura + persistência)
 └── README.md
 ```
 
-A explicação detalhada da arquitetura, com diagramas de componentes e de
-sequência, está em [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
+- Arquitetura (componentes e sequência): [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md)
+- Camada de persistência (modelo de dados, repositórios, histórico, testes):
+  [`docs/PERSISTENCIA.md`](docs/PERSISTENCIA.md)
 
 ---
 
@@ -94,26 +106,47 @@ sequência, está em [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 | POST | `/api/auth/register` | não | Cria conta e já devolve o token |
 | POST | `/api/auth/login` | não | Faz login e devolve o token |
 | GET | `/api/games` | não | Lista os jogos do catálogo |
+| GET | `/api/games/search?title=&page=&size=` | não | Busca paginada por título |
 | GET | `/api/games/{id}` | não | Detalhe do jogo + avaliações |
 | POST | `/api/games/{id}/reviews` | **sim** | Publica uma avaliação |
+| PUT | `/api/reviews/{id}` | **sim** | Edita a própria avaliação |
+| DELETE | `/api/reviews/{id}` | **sim** | Apaga a própria avaliação |
+| GET | `/api/reviews/{id}/history` | **sim** | Histórico de mudanças da avaliação |
 | POST | `/api/collection` | **sim** | Adiciona/atualiza um jogo na coleção |
+| GET | `/api/collection/{id}/history` | **sim** | Histórico de um item da coleção |
 | GET | `/api/users/{username}` | não | Perfil público + avaliações |
 | GET | `/api/users/{username}/collection` | não | Coleção pública do usuário |
 | GET | `/api/users/me` | **sim** | Perfil de quem está logado |
 
 Console do banco H2 (pra inspecionar os dados): `http://localhost:8080/h2-console`
-(JDBC URL: `jdbc:h2:mem:gamelog`, usuário `sa`, sem senha).
+(JDBC URL: `jdbc:h2:file:./data/gamelog`, usuário `sa`, sem senha).
+
+### Testes da camada de persistência
+
+```bash
+cd backend
+mvn test
+```
+
+São 21 testes `@DataJpaTest` cobrindo repositórios, constraints, paginação,
+agregação, auditoria de datas e o histórico de revisões (Envers). O que cada
+classe prova está descrito em [`docs/PERSISTENCIA.md`](docs/PERSISTENCIA.md).
 
 ---
 
 ## API externa (RAWG)
 
-A chave da RAWG fica em `application.properties`, mas pode ser sobrescrita por
-variável de ambiente `RAWG_API_KEY`:
+A chave da RAWG **não fica no repositório**: ela vem da variável de ambiente
+`RAWG_API_KEY`. Pra importar o catálogo completo, crie uma chave gratuita em
+[rawg.io/apidocs](https://rawg.io/apidocs) e suba o back-end assim:
 
-```properties
-app.rawg.key=${RAWG_API_KEY:sua-chave-aqui}
+```bash
+# Windows PowerShell
+$env:RAWG_API_KEY="sua-chave-aqui"; mvn spring-boot:run
 ```
+
+Sem a chave, a aplicação continua funcionando: o seeder usa uma lista local de
+jogos de reserva.
 
 O catálogo é importado uma vez no startup (lista de jogos). A descrição completa
 de cada jogo é buscada sob demanda — só quando alguém abre a página dele — e
