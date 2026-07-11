@@ -2,6 +2,7 @@ package com.gamelog.collection.domain;
 
 import com.gamelog.catalog.domain.Game;
 import com.gamelog.identity.domain.User;
+import com.gamelog.shared.persistence.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,18 +13,26 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.Instant;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 // Um item da colecao pessoal de um usuario: um jogo que ele marcou, com quantas
 // horas jogou e em que pe esta (jogando, zerado, etc). E diferente de review -
 // aqui nao precisa ter opiniao, e so o registro de que o jogo faz parte da vida
 // dele. A constraint (user_id, game_id) garante um item por jogo por pessoa.
+//
+// @Audited: a colecao muda o tempo todo (horas jogadas, status), entao e a
+// candidata perfeita pra historico. Cada update vira uma linha em
+// collection_entries_aud, e da pra responder "quando eu zerei esse jogo?".
 @Entity
+@Audited
+@AuditOverride(forClass = Auditable.class)
 @Table(
         name = "collection_entries",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "game_id"})
 )
-public class CollectionEntry {
+public class CollectionEntry extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,10 +40,12 @@ public class CollectionEntry {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "game_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Game game;
 
     // Horas jogadas (informadas pelo usuario).
@@ -45,9 +56,6 @@ public class CollectionEntry {
     @Column(nullable = false)
     private String status;
 
-    @Column(nullable = false)
-    private Instant createdAt = Instant.now();
-
     protected CollectionEntry() {
     }
 
@@ -56,7 +64,6 @@ public class CollectionEntry {
         this.game = game;
         this.hoursPlayed = hoursPlayed;
         this.status = status;
-        this.createdAt = Instant.now();
     }
 
     public Long getId() {
@@ -86,9 +93,5 @@ public class CollectionEntry {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
     }
 }
