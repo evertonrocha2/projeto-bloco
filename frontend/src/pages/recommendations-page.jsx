@@ -41,8 +41,8 @@ export default function RecommendationsPage() {
       setData(recommendations)
       setProfile(tasteProfile)
       setError(null)
-    } catch (e) {
-      setError(e.message)
+    } catch (erro) {
+      setError(erro.message)
     } finally {
       setLoading(false)
     }
@@ -60,8 +60,8 @@ export default function RecommendationsPage() {
       // O perfil pode ter mudado junto (novas avaliacoes, feedback novo).
       setProfile(await api.getTasteProfile(username))
       setError(null)
-    } catch (e) {
-      setError(e.message)
+    } catch (erro) {
+      setError(erro.message)
     } finally {
       setRefreshing(false)
     }
@@ -84,8 +84,8 @@ export default function RecommendationsPage() {
       // Recarrega o perfil: um "gostei" reforca o genero daquele jogo, e o grafico
       // deve refletir isso.
       setProfile(await api.getTasteProfile(username))
-    } catch (e) {
-      setError(e.message)
+    } catch (erro) {
+      setError(erro.message)
       await load()
     } finally {
       setFeedbackBusy(false)

@@ -30,7 +30,7 @@ export default function ProfilePage() {
     setProfile(null)
     setError(null)
     setTab('reviews')
-    api.getProfile(username).then(setProfile).catch((e) => setError(e.message))
+    api.getProfile(username).then(setProfile).catch((erro) => setError(erro.message))
     loadCollection()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username])
