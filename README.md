@@ -44,16 +44,26 @@ tela continua funcionando e avisa). São 91 testes no total. Detalhes em
 
 ## Como rodar
 
-O sistema agora tem **cinco aplicações Java**. Os scripts sobem todas na ordem
-certa, esperando cada uma responder antes de seguir:
+O sistema tem **cinco aplicações Java**. Cada uma sobe com `mvn spring-boot:run`
+**de dentro da pasta do módulo** — isso importa: o Config Server procura os `.yml`
+em `../../config-repo`, e cada serviço com banco cria `./data` relativo ao
+diretório atual.
+
+Abra um terminal por serviço, nesta ordem:
 
 ```bash
-# Windows
-.\run-all.ps1
-
-# Linux / macOS / Git Bash
-./run-all.sh
+cd services/config-server          && mvn spring-boot:run   # 8888
+cd services/discovery-server       && mvn spring-boot:run   # 8761
+cd backend                         && mvn spring-boot:run   # 8080
+cd services/recommendation-service && mvn spring-boot:run   # 8081
+cd services/api-gateway            && mvn spring-boot:run   # 8090
 ```
+
+A ordem segue a árvore de dependências: os serviços pedem configuração ao Config
+Server e se registram no Eureka. Subir fora de ordem **não quebra nada** — todos
+usam `optional:` na configuração e toleram o Eureka ausente — a ordem só evita
+tentativas de reconexão no log. Espere cada um responder antes de subir o
+próximo.
 
 Depois, o front-end em outro terminal:
 
@@ -176,7 +186,6 @@ projeto-bloco/
 ├── config-repo/                       → .yml servidos pelo Config Server
 ├── frontend/                          → Interface (React)
 ├── docs/                              → Documentação
-├── run-all.ps1 / run-all.sh           → sobem os cinco serviços na ordem
 └── README.md
 ```
 

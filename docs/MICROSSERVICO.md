@@ -729,22 +729,29 @@ degradado".
 
 ## 12. Como rodar
 
-```bash
-# tudo de uma vez (Windows)
-.\run-all.ps1
+Um terminal por serviço, nesta ordem:
 
-# tudo de uma vez (Linux / macOS / Git Bash)
-./run-all.sh
+```bash
+cd services/config-server          && mvn spring-boot:run   # 8888
+cd services/discovery-server       && mvn spring-boot:run   # 8761
+cd backend                         && mvn spring-boot:run   # 8080
+cd services/recommendation-service && mvn spring-boot:run   # 8081
+cd services/api-gateway            && mvn spring-boot:run   # 8090
 
 # front-end, em outro terminal
 cd frontend && npm run dev
 ```
 
-Os scripts respeitam a ordem de inicialização e esperam cada serviço responder
-antes de subir o próximo. Manualmente, cada serviço é
-`cd <pasta-do-módulo> && mvn spring-boot:run` — **de dentro da pasta do módulo**,
-porque o Config Server procura os `.yml` em `../../config-repo` e cada serviço com
-banco cria `./data` relativo ao diretório atual.
+Sempre **de dentro da pasta do módulo**: o Config Server procura os `.yml` em
+`../../config-repo` e cada serviço com banco cria `./data` relativo ao diretório
+atual.
+
+A ordem segue a árvore de dependências (configuração → descoberta → serviços →
+gateway). Subir fora de ordem não quebra nada, porque todos usam `optional:` na
+configuração e toleram o Eureka ausente; a ordem só mantém o log limpo de
+tentativas de reconexão. Espere cada serviço responder antes de subir o próximo —
+o Eureka leva cerca de 30 segundos para completar o registro, então o gateway só
+consegue rotear depois disso.
 
 | Endereço | O que é |
 |---|---|
@@ -784,7 +791,7 @@ Usuário de demonstração: **demo / demo123**
 | Fora | Por quê |
 |---|---|
 | Mensageria (Kafka / RabbitMQ) e comunicação por eventos | Não é pedido pela entrega e adiciona um broker para subir na apresentação. A comunicação síncrona com disjuntor cobre o que a entrega avalia. |
-| Docker Compose | Os scripts `run-all.*` resolvem a orquestração local sem exigir Docker instalado. |
+| Docker Compose | Subir cinco serviços com `mvn spring-boot:run` resolve o desenvolvimento local sem exigir Docker instalado. Faria sentido a partir do momento em que houvesse implantação real. |
 | Distributed tracing (Zipkin) | Mais um processo, e com dois serviços a cadeia de chamadas ainda é legível pelos logs. |
 | PostgreSQL em vez de H2 | A separação de bancos — que é o que a entrega avalia — já está feita com dois arquivos H2 independentes. |
 | Authorization Server / OAuth2 no gateway | Exigiria refazer a autenticação do monólito, que é assunto do TP1. A limitação está declarada na seção 5. |

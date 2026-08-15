@@ -19,7 +19,6 @@ frontend/dist/
 
 # Logs e variaveis de ambiente
 *.log
-# Logs por servico gerados pelo run-all.sh
 logs/
 .env
 .env.local
