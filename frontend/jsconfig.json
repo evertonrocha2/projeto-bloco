@@ -1,0 +1,15 @@
+{
+  "//": "Este arquivo nao participa do build - quem resolve o alias e o vite.config.js. Ele existe para o EDITOR: sem ele, o VS Code marca todo import '@/...' como nao encontrado e o 'ir para definicao' para de funcionar.",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
