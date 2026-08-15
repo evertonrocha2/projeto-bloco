@@ -48,6 +48,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/games/**", "/api/users/**").permitAll()
                         // Console do H2 liberado pra inspecionar o banco em desenvolvimento.
                         .requestMatchers("/h2-console/**").permitAll()
+                        // Endpoints de monitoramento liberados. Sao consultados por
+                        // OUTROS PROCESSOS (o Eureka pra saber se a instancia esta
+                        // saudavel, o gateway pra decidir se manda trafego), e esses
+                        // processos nao tem token de usuario nenhum pra apresentar.
+                        // Sem esta regra, a chamada de health caia na regra geral
+                        // "anyRequest().authenticated()" e voltava 403 - o servico
+                        // parecia doente estando perfeitamente no ar.
+                        //
+                        // O que fica exposto e so o que application.properties permite
+                        // (management.endpoints.web.exposure.include=health,info), e nao
+                        // o conjunto completo do Actuator.
+                        .requestMatchers("/actuator/**").permitAll()
                         // Qualquer outra coisa (ex: postar review, ver /api/me) exige estar logado.
                         .anyRequest().authenticated())
                 // O console do H2 roda dentro de um frame; sem isso o navegador bloqueia.
