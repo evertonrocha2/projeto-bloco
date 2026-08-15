@@ -1,0 +1,85 @@
+# API Gateway: a porta unica de entrada do sistema.
+#
+# O front conhece UM endereco (localhost:8090) e nao sabe quantos servicos existem
+# atras dele. Sem gateway, o api.js precisaria de uma URL por servico e mudaria a
+# cada servico novo; e o navegador precisaria de CORS configurado em cada um.
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api-gateway
+
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  cloud:
+    gateway:
+      default-filters:
+        # Remove headers de CORS repetidos antes de responder ao navegador.
+        #
+        # Por que e necessario: o monolito configura CORS por conta propria desde o
+        # TP1 (o front chamava a 8080 direto), e o gateway tambem configura, porque
+        # agora e ele que o navegador ve. Nas rotas do monolito a resposta saia com
+        # Access-Control-Allow-Origin DUAS VEZES.
+        #
+        # O efeito e pior do que parece: o navegador nao aceita o header repetido,
+        # ele RECUSA a resposta inteira ("contains multiple values, but only one is
+        # allowed"). Testando com curl aparecia HTTP 200 e o JSON correto - e o
+        # catalogo simplesmente nao carregava em tela nenhuma.
+        #
+        # RETAIN_UNIQUE mantem uma ocorrencia de cada valor. Alternativa seria tirar
+        # o CORS do monolito, mas ai apontar o front direto pra 8080 (via
+        # VITE_API_URL, como o README documenta) pararia de funcionar.
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+      # As ROTAS ficam neste arquivo local, e nao no Config Server, de proposito:
+      # sem elas o gateway sobe sem saber rotear nada, e o sistema inteiro fica
+      # inacessivel. Uma dependencia dessa gravidade na inicializacao nao vale a
+      # centralizacao. O que ganha de fato com configuracao central sao os valores
+      # ajustaveis em tempo de execucao (os pesos do algoritmo), e nao a topologia.
+      routes:
+        # A ORDEM IMPORTA. /api/** casaria com /api/recommendations/** tambem, entao
+        # a rota especifica tem que ser avaliada primeiro. Os campos "order"
+        # explicitos deixam isso garantido em vez de depender da ordem do arquivo.
+        - id: recommendation-service
+          # lb:// = resolve pelo nome no Eureka e balanceia entre as instancias.
+          # Nao existe host nem porta escrita em lugar nenhum.
+          uri: lb://recommendation-service
+          order: 0
+          predicates:
+            - Path=/api/recommendations/**
+
+        - id: gamelog-monolith
+          uri: lb://gamelog
+          order: 1
+          predicates:
+            - Path=/api/**
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            # CORS resolvido AQUI, num lugar so. Como o navegador so conversa com o
+            # gateway, os servicos de tras nao precisam saber que existe um front em
+            # outra porta.
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
+            allowedHeaders: "*"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # gateway: lista as rotas ativas em /actuator/gateway/routes - util pra
+        # conferir o roteamento numa demonstracao.
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
