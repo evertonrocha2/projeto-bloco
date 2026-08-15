@@ -10,6 +10,7 @@ import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
 import com.gamelog.review.domain.Review;
 import com.gamelog.review.dto.GameRatingRow;
+import com.gamelog.review.dto.RatedGameRow;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,6 +97,41 @@ class ReviewRepositoryTest {
         Game semReview = gameRepository.save(new Game(203L, "Silksong", null, 2025, "Metroidvania", "url"));
 
         assertThat(reviewRepository.aggregateByGameIds(List.of(semReview.getId()))).isEmpty();
+    }
+
+    // --- Projecao usada pelo microsservico de recomendacoes (TP3) ---
+
+    @Test
+    void projetaJogosAvaliadosComGeneroENota() {
+        // O microsservico precisa do GENERO junto da nota pra montar o perfil de
+        // gosto. Buscar as entidades e chamar getGame().getGenre() funcionaria,
+        // mas Review.game e LAZY: seriam N consultas extras, uma por review. Esta
+        // projecao resolve em UMA consulta com join - mesmo raciocinio do
+        // aggregateByGameIds aqui em cima.
+        List<RatedGameRow> daAna = reviewRepository.findRatedGamesByUsername("ana");
+
+        assertThat(daAna).hasSize(2);
+
+        RatedGameRow doZelda = daAna.stream()
+                .filter(r -> r.gameId().equals(zelda.getId()))
+                .findFirst().orElseThrow();
+        assertThat(doZelda.genre()).isEqualTo("Aventura");
+        assertThat(doZelda.rating()).isEqualTo(5);
+    }
+
+    @Test
+    void projecaoDeJogosAvaliadosIgnoraOutrosUsuarios() {
+        // A consulta filtra por username, entao a review do beto no Zelda nao pode
+        // aparecer no perfil da ana - senao o perfil de gosto sairia contaminado.
+        List<RatedGameRow> doBeto = reviewRepository.findRatedGamesByUsername("beto");
+
+        assertThat(doBeto).hasSize(1);
+        assertThat(doBeto.get(0).rating()).isEqualTo(3);
+    }
+
+    @Test
+    void projecaoDeJogosAvaliadosVaziaParaUsuarioDesconhecido() {
+        assertThat(reviewRepository.findRatedGamesByUsername("ninguem")).isEmpty();
     }
 
     @Test
