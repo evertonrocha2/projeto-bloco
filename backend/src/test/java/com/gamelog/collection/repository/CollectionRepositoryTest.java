@@ -59,6 +59,23 @@ class CollectionRepositoryTest {
         assertThat(item.get().getStatus()).isEqualTo("Zerado");
     }
 
+    // --- Projecao usada pelo microsservico de recomendacoes (TP3) ---
+
+    @Test
+    void projetaIdsDosJogosQueOUsuarioTem() {
+        // O microsservico usa essa lista pra NAO recomendar jogo que a pessoa ja
+        // tem. So os ids bastam, entao a consulta devolve so eles em vez de
+        // carregar as entidades inteiras (CollectionEntry.game e LAZY).
+        List<Long> ids = collectionRepository.findOwnedGameIdsByUsername("davi");
+
+        assertThat(ids).containsExactlyInAnyOrder(zelda.getId(), hades.getId());
+    }
+
+    @Test
+    void projecaoDeJogosPossuidosVaziaParaUsuarioDesconhecido() {
+        assertThat(collectionRepository.findOwnedGameIdsByUsername("ninguem")).isEmpty();
+    }
+
     @Test
     void atualizaHorasEStatusSemDuplicar() {
         CollectionEntry item = collectionRepository
