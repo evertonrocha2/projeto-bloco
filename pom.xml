@@ -47,6 +47,7 @@
         <module>services/discovery-server</module>
 
         <!-- O microsservico desta entrega -->
+        <module>services/recommendation-service</module>
     </modules>
 
     <dependencyManagement>

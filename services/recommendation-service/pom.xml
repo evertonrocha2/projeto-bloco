@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.gamelog</groupId>
+        <artifactId>projeto-bloco</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>recommendation-service</artifactId>
+    <name>recommendation-service</name>
+    <description>Microsservico de recomendacoes de jogos</description>
+
+    <dependencies>
+        <!-- API REST propria -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- BANCO PROPRIO. Este e o ponto central da entrega: o microsservico tem
+             a sua propria camada de persistencia, com tabelas que o monolito nao
+             conhece e nao acessa. Nada de tabela compartilhada. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Validacao dos corpos de requisicao (@NotNull no feedback) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Descoberta: acha o monolito pelo nome ("gamelog"), sem endereco fixo -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
+        <!-- Configuracao centralizada: os pesos do algoritmo vem daqui -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+
+        <!-- OpenFeign: declara a chamada HTTP pro monolito como uma INTERFACE Java.
+             O Feign gera a implementacao e, integrado ao Eureka, resolve o nome do
+             servico pra um endereco real na hora da chamada. -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <!-- Circuit breaker: quando o monolito nao responde, para de tentar e cai
+             pro plano B em vez de acumular requisicoes esperando timeout. -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+        </dependency>
+
+        <!-- /actuator/health, /actuator/refresh (recarrega config) e
+             /actuator/circuitbreakers (estado do disjuntor) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Mesma razao do monolito: teste nao depende de infraestrutura no ar. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <spring.cloud.config.enabled>false</spring.cloud.config.enabled>
+                        <eureka.client.enabled>false</eureka.client.enabled>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

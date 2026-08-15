@@ -1,0 +1,95 @@
+# Microsservico de recomendacoes.
+server:
+  port: 8081
+
+spring:
+  application:
+    # Nome com que ele se registra no Eureka. O gateway roteia
+    # /api/recommendations/** pra lb://recommendation-service usando este nome.
+    name: recommendation-service
+
+  config:
+    # optional: sobe mesmo sem o Config Server, usando os valores deste arquivo.
+    import: optional:configserver:http://localhost:8888
+
+  # === BANCO PROPRIO ===
+  # Arquivo separado do banco do monolito (que fica em backend/data/gamelog).
+  # Nao e detalhe de configuracao, e a fronteira do microsservico: as tabelas
+  # daqui (recommendations, recommendation_feedback) nao existem no monolito, e as
+  # tabelas dele (users, games, reviews) nao existem aqui. A unica ligacao entre
+  # os dois mundos e HTTP, e a referencia se faz por username/gameId - sem chave
+  # estrangeira atravessando processo.
+  datasource:
+    url: jdbc:h2:file:./data/recommendations;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: false
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          # Timeout das chamadas ao monolito. Sem limite explicito, o Feign
+          # esperaria o padrao do sistema operacional e o usuario ficaria olhando
+          # a tela girar antes de o fallback entrar em acao. Melhor falhar rapido
+          # e servir a recomendacao anterior.
+          default:
+            connect-timeout: 2000
+            read-timeout: 3000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# --- Valores de reserva ---
+# Normalmente estes numeros vem do Config Server (config-repo/recommendation-service.yml),
+# que tem prioridade sobre este arquivo. Ficam duplicados aqui de proposito: sem
+# eles, subir o servico sem o Config Server daria pesos zerados e recomendacao
+# nenhuma - falha silenciosa, o pior tipo.
+recommendation:
+  scoring:
+    min-rating: 3
+    collection-weight: 0.5
+    liked-boost: 1.5
+    genre-weight: 3.0
+    community-weight: 2.0
+    max-results: 8
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+    instances:
+      gamelog:
+        sliding-window-size: 5
+        minimum-number-of-calls: 3
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 2
