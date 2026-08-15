@@ -8,18 +8,36 @@ no navegador até o banco e de volta.
 
 ## 1. Visão geral
 
-O GameLog é um **monólito**: back-end e front-end são dois projetos, mas o
-back-end roda como uma única aplicação (um processo só), com um único banco. Essa
-foi uma escolha consciente da Primeira Entrega — começar simples e deixar a base
-pronta pra, no futuro, quebrar em microsserviços se precisar.
+> **O que mudou no TP3.** Este documento descreve o **monólito modular**, que
+> continua sendo o coração do sistema e não foi reestruturado. O que mudou é que ele
+> deixou de ser a aplicação inteira: agora convive com um **microsserviço de
+> recomendações**, um gateway, um servidor de configuração e um de descoberta.
+> A topologia distribuída, o novo contexto de domínio e os endpoints novos estão em
+> [`MICROSSERVICO.md`](MICROSSERVICO.md). As seções 2 a 9 daqui seguem valendo
+> integralmente — foi justamente a divisão em módulos que tornou a expansão barata.
+
+O GameLog nasceu como um **monólito**: back-end e front-end são dois projetos, mas
+o back-end rodava como uma única aplicação (um processo só), com um único banco.
+Essa foi uma escolha consciente da Primeira Entrega — começar simples e deixar a
+base pronta pra, no futuro, quebrar em microsserviços se precisar. No TP3 esse
+"futuro" chegou em parte: um subdomínio novo (recomendações) nasceu já como serviço
+separado, e os módulos existentes continuaram onde estavam, porque não havia motivo
+para movê-los.
 
 ```mermaid
 flowchart LR
     user([Usuário]) --> react[Front-end React<br/>localhost:5173]
-    react -- HTTP / JSON --> api[Back-end Spring Boot<br/>localhost:8080]
-    api -- JPA / SQL --> db[(Banco H2<br/>em memória)]
+    react -- HTTP / JSON --> gw[API Gateway<br/>localhost:8090]
+    gw --> api[Monólito Spring Boot<br/>localhost:8080]
+    gw --> reco[Microsserviço de<br/>Recomendações<br/>localhost:8081]
+    api -- JPA / SQL --> db[(Banco H2<br/>em arquivo)]
+    reco -- JPA / SQL --> db2[(Banco H2 próprio<br/>recommendations)]
+    reco -- HTTP --> api
     api -- HTTP --> rawg[API RAWG<br/>catálogo de jogos]
 ```
+
+Repare que os dois serviços têm **bancos separados** e conversam só por HTTP — o
+mesmo tipo de fronteira que sempre existiu entre o front e o back.
 
 O front e o back conversam só por **HTTP trocando JSON**. Eles não compartilham
 código nem banco — o único contrato entre eles é a API REST. Isso é o que
@@ -42,10 +60,17 @@ backend/src/main/java/com/gamelog/
 ├── catalog/      ← módulo (jogos / RAWG)
 ├── review/       ← módulo (avaliações — núcleo)
 ├── collection/   ← módulo (coleção do usuário)
+├── integration/  ← módulo (TP3): superfície voltada a OUTROS SERVIÇOS
 ├── security/     ← JWT, filtro, config
 ├── shared/       ← tratamento de erros comum
 └── config/       ← seed de dados
 ```
+
+> O módulo `integration` é a única estrutura nova no monólito no TP3. Ele existe
+> porque o back-end passou a ter **dois tipos de cliente**: o front React e o
+> microsserviço de recomendações. Deixar isso explícito na estrutura de pastas evita
+> que endpoints de integração se misturem aos que servem a tela — eles evoluem por
+> razões diferentes e para consumidores diferentes.
 
 > **Não é Clean Architecture.** Foi uma escolha consciente. Clean Architecture
 > exigiria inversão de dependência estrita, separação em camadas
@@ -116,6 +141,7 @@ flowchart TB
 | **Catalog** | O acervo de jogos | O catálogo existe independente de ter review ou não |
 | **Review** | Liga usuário ↔ jogo com nota e texto | É o **núcleo**: o motivo do app existir |
 | **Collection** | Jogos que o usuário marcou como seus, com horas jogadas e status | Colecionar é diferente de avaliar: você pode ter o jogo sem ter opinião dele |
+| **Recommendation** (TP3) | Indica jogos por afinidade de gênero e guarda o retorno do usuário | Nasceu **fora** do monólito, como serviço próprio: ver [`MICROSSERVICO.md`](MICROSSERVICO.md) |
 
 A `Review` é o ponto onde os três contextos se encontram — ela referencia um
 `User` (autor) e um `Game` (alvo). Por isso o `ReviewService` é o único que
@@ -292,5 +318,11 @@ local de reserva — a aplicação nunca abre sem catálogo.
   o Spring.
 - **DRY:** a lógica das estrelas, das chamadas HTTP e do estado de login está cada
   uma num lugar só, reaproveitada por todas as telas.
-- **YAGNI:** não construímos o que a entrega não pede (ex: edição/exclusão de
-  review, papéis de admin). A base está pronta pra crescer, mas começou enxuta.
+- **YAGNI:** não construímos o que a entrega não pede (ex: papéis de admin,
+  mensageria entre serviços, Docker). A base está pronta pra crescer, mas começou
+  enxuta — edição e exclusão de review chegaram no TP2, e o serviço de recomendações
+  no TP3, cada um quando passou a ser pedido.
+- **Fronteira por contrato (TP3):** o microsserviço referencia usuário e jogo por
+  `username` e `gameId`, sem chave estrangeira atravessando processo. É o que permite
+  os dois serviços terem bancos separados e evoluírem sem se coordenar — com o preço
+  de o banco não poder garantir que aquele `gameId` existe.
