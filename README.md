@@ -21,7 +21,7 @@ Detalhes em [`docs/PERSISTENCIA.md`](docs/PERSISTENCIA.md).
 usuário. Integrado com **Spring Cloud**: Config Server (configuração central que
 muda o algoritmo sem reiniciar), Eureka (descoberta), API Gateway (porta única) e
 OpenFeign + Resilience4j (comunicação com disjuntor — com o monólito fora do ar, a
-tela continua funcionando e avisa). São 91 testes no total. Detalhes em
+tela continua funcionando e avisa). São 101 testes no total. Detalhes em
 [`docs/MICROSSERVICO.md`](docs/MICROSSERVICO.md).
 
 ---
@@ -245,10 +245,10 @@ bancos independentes**: nenhuma tabela em comum entre os dois serviços.
 
 ## Testes
 
-**91 testes.** Da raiz do projeto, os cinco módulos Java de uma vez:
+**101 testes.** Da raiz do projeto, os cinco módulos Java de uma vez:
 
 ```bash
-mvn test          # 85 testes (monólito + microsserviço + gateway + config + eureka)
+mvn test          # 86 testes (monólito + microsserviço + gateway + config + eureka)
 ```
 
 E o front-end:
@@ -265,7 +265,7 @@ npm test          # 6 testes
 | `services/api-gateway` | 8 | roteamento e ordem das rotas, filtro de autenticação, dedupe de CORS |
 | `services/config-server` | 2 | serve de fato as propriedades do `config-repo` |
 | `services/discovery-server` | 2 | o registro responde e não se registra em si mesmo |
-| `frontend` | 6 | composição dos textos da tela de recomendações |
+| `frontend` | 15 | textos da tela de recomendações e leitura dos gêneros do catálogo |
 
 ### Testes da camada de persistência (TP2)
 

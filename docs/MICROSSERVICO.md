@@ -593,12 +593,12 @@ disjuntor e sem Spring.
 
 ## 9. Testes
 
-**91 testes**, sendo **70 novos** nesta entrega. Os 21 do TP2 continuam passando
+**101 testes**, sendo **80 novos** nesta entrega. Os 21 do TP2 continuam passando
 sem alteração.
 
 ```bash
-mvn test                      # na raiz: todos os módulos Java (85)
-cd frontend && npm test       # front-end (6)
+mvn test                      # na raiz: todos os módulos Java (86)
+cd frontend && npm test       # front-end (15)
 ```
 
 | Módulo | Testes | O que cobre |
@@ -608,7 +608,7 @@ cd frontend && npm test       # front-end (6)
 | `api-gateway` | 8 | roteamento e ordem das rotas, filtro de autenticação, dedupe de CORS |
 | `config-server` | 2 | serve de fato as propriedades do `config-repo` |
 | `discovery-server` | 2 | o registro responde e não se registra em si mesmo |
-| `frontend` | 6 | composição do texto do "porquê" e do estado do serviço |
+| `frontend` | 15 | texto do "porquê", estado do serviço e leitura dos gêneros |
 
 ### Escolhas de teste que vale explicar
 
