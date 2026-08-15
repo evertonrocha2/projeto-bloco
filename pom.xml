@@ -43,6 +43,7 @@
         <module>backend</module>
 
         <!-- Infraestrutura Spring Cloud -->
+        <module>services/config-server</module>
 
         <!-- O microsservico desta entrega -->
     </modules>

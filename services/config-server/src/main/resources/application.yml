@@ -1,0 +1,31 @@
+# Servidor de configuracao. Sobe primeiro, porque os outros servicos pedem a
+# configuracao deles pra ele durante o proprio startup.
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+
+  profiles:
+    # Perfil "native": le os arquivos .yml de uma pasta do disco em vez de clonar
+    # um repositorio Git. Num ambiente real o backend Git e o normal (da
+    # versionamento e auditoria da configuracao de graca); aqui a pasta local
+    # mantem o projeto rodando sem depender de rede nem de um segundo repo.
+    active: native
+
+  cloud:
+    config:
+      server:
+        native:
+          # Duas localizacoes porque o diretorio de trabalho muda conforme como a
+          # aplicacao e iniciada: da raiz do projeto (java -jar) ou da pasta do
+          # modulo (mvn spring-boot:run, e tambem os testes). O Config Server
+          # ignora em silencio as localizacoes que nao existem.
+          search-locations: file:./config-repo,file:../../config-repo
+
+# Nao registra no Eureka: o Config Server e a raiz da arvore de inicializacao,
+# entao ele nao pode depender de ninguem pra subir.
+eureka:
+  client:
+    enabled: false
