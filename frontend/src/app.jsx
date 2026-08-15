@@ -1,13 +1,13 @@
 import { Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar.jsx'
-import Footer from './components/Footer.jsx'
-import LandingPage from './pages/LandingPage.jsx'
-import GamesPage from './pages/GamesPage.jsx'
-import GameDetailPage from './pages/GameDetailPage.jsx'
-import ProfilePage from './pages/ProfilePage.jsx'
-import RecommendationsPage from './pages/RecommendationsPage.jsx'
-import LoginPage from './pages/LoginPage.jsx'
-import RegisterPage from './pages/RegisterPage.jsx'
+import Navbar from '@/layout/navbar.jsx'
+import Footer from '@/layout/footer.jsx'
+import LandingPage from '@/pages/landing-page.jsx'
+import GamesPage from '@/pages/games-page.jsx'
+import GameDetailPage from '@/pages/game-detail-page.jsx'
+import ProfilePage from '@/pages/profile-page.jsx'
+import RecommendationsPage from '@/pages/recommendations-page.jsx'
+import LoginPage from '@/pages/login-page.jsx'
+import RegisterPage from '@/pages/register-page.jsx'
 
 // O App so define o "mapa" do site. O layout e uma coluna que ocupa a tela
 // inteira (min-h-screen): o <main> cresce pra preencher o espaco (flex-1), o

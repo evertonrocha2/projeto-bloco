@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ThumbsUp, X, Sparkles } from 'lucide-react'
-import { reasonText } from '../recommendationText.js'
+import { reasonText } from './recommendation-text.js'
 
 // Card de um jogo recomendado.
 //

@@ -4,12 +4,12 @@ import {
   Star, Library, Users, Search, Clock, Gamepad2,
   ArrowRight, ArrowUpRight, Quote, Sparkles,
 } from 'lucide-react'
-import { api } from '../api.js'
-import { useAuth } from '../auth.jsx'
-import GameCard from '../components/GameCard.jsx'
-import Marquee from '../components/Marquee.jsx'
-import StarRating from '../components/StarRating.jsx'
-import { btnPrimary, btnGhost, btnAccent, card } from '../ui.js'
+import { api } from '@/lib/api'
+import { useAuth } from '@/lib/auth.jsx'
+import GameCard from '@/features/catalog/game-card.jsx'
+import Marquee from '@/ui/marquee.jsx'
+import StarRating from '@/ui/star-rating.jsx'
+import { btnPrimary, btnGhost, btnAccent, card } from '@/lib/ui.js'
 
 const wrap = 'max-w-6xl mx-auto px-6'
 

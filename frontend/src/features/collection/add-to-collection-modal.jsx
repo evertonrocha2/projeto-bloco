@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { X, Search, Check } from 'lucide-react'
-import { api } from '../api.js'
-import { btnPrimary, field } from '../ui.js'
+import { api } from '@/lib/api'
+import { btnPrimary, field } from '@/lib/ui.js'
 
 const STATUS_OPTIONS = ['Quero jogar', 'Jogando', 'Zerado', 'Largado']
 

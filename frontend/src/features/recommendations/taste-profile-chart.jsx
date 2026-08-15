@@ -1,4 +1,4 @@
-import { card } from '../ui.js'
+import { card } from '@/lib/ui.js'
 
 // O perfil de gosto do usuario em barras: quanto ele gosta de cada genero, na
 // escala em que o favorito vale 1.0.

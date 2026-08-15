@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Plus, Check } from 'lucide-react'
-import { api } from '../api.js'
-import { useAuth } from '../auth.jsx'
-import StarRating from '../components/StarRating.jsx'
-import Spinner from '../components/Spinner.jsx'
-import { btnPrimary, btnGhost, field, card } from '../ui.js'
+import { api } from '@/lib/api'
+import { useAuth } from '@/lib/auth.jsx'
+import StarRating from '@/ui/star-rating.jsx'
+import Spinner from '@/ui/spinner.jsx'
+import { btnPrimary, btnGhost, field, card } from '@/lib/ui.js'
 
 const STATUS_OPTIONS = ['Quero jogar', 'Jogando', 'Zerado', 'Largado']
 const wrap = 'max-w-5xl mx-auto px-6 py-12'

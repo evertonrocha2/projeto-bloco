@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
-import StarRating from './StarRating.jsx'
+import StarRating from '@/ui/star-rating.jsx'
 
 // Card de um jogo. Aparece no catalogo, na previa da landing e na colecao.
 // Quando recebe onQuickAdd, mostra um botao "+" no canto pra adicionar o jogo a

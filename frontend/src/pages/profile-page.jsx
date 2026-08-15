@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Clock, Plus } from 'lucide-react'
-import { api } from '../api.js'
-import { useAuth } from '../auth.jsx'
-import StarRating from '../components/StarRating.jsx'
-import Spinner from '../components/Spinner.jsx'
-import AddToCollectionModal from '../components/AddToCollectionModal.jsx'
-import { card, btnPrimary } from '../ui.js'
+import { api } from '@/lib/api'
+import { useAuth } from '@/lib/auth.jsx'
+import StarRating from '@/ui/star-rating.jsx'
+import Spinner from '@/ui/spinner.jsx'
+import AddToCollectionModal from '@/features/collection/add-to-collection-modal.jsx'
+import { card, btnPrimary } from '@/lib/ui.js'
 
 const wrap = 'max-w-5xl mx-auto px-6 py-12'
 

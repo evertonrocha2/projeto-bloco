@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { api } from '../api.js'
-import { useAuth } from '../auth.jsx'
-import { btnPrimary, field, card } from '../ui.js'
+import { api } from '@/lib/api'
+import { useAuth } from '@/lib/auth.jsx'
+import { btnPrimary, field, card } from '@/lib/ui.js'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')

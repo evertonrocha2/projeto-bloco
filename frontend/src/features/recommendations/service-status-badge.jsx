@@ -1,5 +1,5 @@
 import { Wifi, WifiOff } from 'lucide-react'
-import { serviceStatus } from '../recommendationText.js'
+import { serviceStatus } from './recommendation-text.js'
 
 // Mostra se as recomendacoes vieram de um calculo novo ou do ultimo lote salvo.
 //

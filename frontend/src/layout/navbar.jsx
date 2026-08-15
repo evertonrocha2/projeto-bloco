@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Gamepad2 } from 'lucide-react'
-import { useAuth } from '../auth.jsx'
-import { btnPrimary } from '../ui.js'
+import { useAuth } from '@/lib/auth.jsx'
+import { btnPrimary } from '@/lib/ui.js'
 
 // Barra do topo, em todas as paginas. NavLink marca sozinho o link atual.
 export default function Navbar() {

@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Search, Plus } from 'lucide-react'
-import { api } from '../api.js'
-import { useAuth } from '../auth.jsx'
-import GameCard from '../components/GameCard.jsx'
-import Spinner from '../components/Spinner.jsx'
-import AddToCollectionModal from '../components/AddToCollectionModal.jsx'
-import { btnPrimary } from '../ui.js'
+import { api } from '@/lib/api'
+import { useAuth } from '@/lib/auth.jsx'
+import GameCard from '@/features/catalog/game-card.jsx'
+import Spinner from '@/ui/spinner.jsx'
+import AddToCollectionModal from '@/features/collection/add-to-collection-modal.jsx'
+import { btnPrimary } from '@/lib/ui.js'
 
 const wrap = 'max-w-6xl mx-auto px-6 py-12'
 

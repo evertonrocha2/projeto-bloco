@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import App from './App.jsx'
-import { AuthProvider } from './auth.jsx'
+import App from './app.jsx'
+import { AuthProvider } from '@/lib/auth.jsx'
 import './index.css'
 
 // Ponto de entrada do front. Aqui a gente "embrulha" o App em dois contextos:

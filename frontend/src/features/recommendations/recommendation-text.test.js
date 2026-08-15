@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { reasonText, serviceStatus } from './recommendationText.js'
+import { reasonText, serviceStatus } from './recommendation-text.js'
 
 // A API do microsservico devolve DADO ESTRUTURADO (uma lista de generos, um
 // booleano stale); a frase que o usuario le e montada aqui. Isso mantem
