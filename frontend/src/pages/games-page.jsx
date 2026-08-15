@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Search, Plus } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
+import { collectGenres, parseGenres } from '@/lib/genres.js'
 import GameCard from '@/features/catalog/game-card.jsx'
 import Spinner from '@/ui/spinner.jsx'
 import AddToCollectionModal from '@/features/collection/add-to-collection-modal.jsx'
@@ -30,27 +31,30 @@ export default function GamesPage() {
   const [activeGenre, setActiveGenre] = useState(searchParams.get('genero') || 'Todos')
 
   useEffect(() => {
-    api.listGames().then(setGames).catch((e) => setError(e.message)).finally(() => setLoading(false))
+    api.listGames()
+      .then(setGames)
+      .catch((erro) => setError(erro.message))
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
     setActiveGenre(searchParams.get('genero') || 'Todos')
   }, [searchParams])
 
-  const genres = useMemo(() => {
-    const set = new Set()
-    games.forEach((g) => (g.genre || '').split(',').forEach((p) => {
-      const n = p.trim()
-      if (n) set.add(n)
-    }))
-    return ['Todos', ...Array.from(set).sort()]
-  }, [games])
+  // Os filtros disponiveis saem do proprio catalogo: nao existe lista fixa de
+  // generos em lugar nenhum, ela e descoberta a partir dos jogos carregados.
+  const genres = useMemo(
+    () => ['Todos', ...collectGenres(games).sort()],
+    [games],
+  )
 
-  const filtered = games.filter((g) => {
-    const matchSearch = g.title.toLowerCase().includes(search.toLowerCase())
-    const matchGenre = activeGenre === 'Todos' || (g.genre || '').includes(activeGenre)
-    return matchSearch && matchGenre
-  })
+  const matchesSearch = (game) =>
+    game.title.toLowerCase().includes(search.toLowerCase())
+
+  const matchesGenre = (game) =>
+    activeGenre === 'Todos' || parseGenres(game.genre).includes(activeGenre)
+
+  const filtered = games.filter((game) => matchesSearch(game) && matchesGenre(game))
 
   if (loading) return <div className={wrap}><Spinner /></div>
   if (error) return <div className={wrap}><p className="text-red-500 font-medium">{error}</p></div>

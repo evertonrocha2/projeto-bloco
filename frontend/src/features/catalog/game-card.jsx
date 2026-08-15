@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import StarRating from '@/ui/star-rating.jsx'
+import { primaryGenre } from '@/lib/genres.js'
 
 // Card de um jogo. Aparece no catalogo, na previa da landing e na colecao.
 // Quando recebe onQuickAdd, mostra um botao "+" no canto pra adicionar o jogo a
@@ -21,7 +22,7 @@ export default function GameCard({ game, onQuickAdd }) {
             className="w-full aspect-video object-cover transition duration-300 group-hover:scale-105"
           />
           <span className="absolute top-2.5 left-2.5 text-xs font-semibold text-ink bg-canvas/90 backdrop-blur rounded-full px-2.5 py-0.5 border border-line">
-            {game.genre?.split(',')[0]}
+            {primaryGenre(game)}
           </span>
         </div>
         <div className="p-4">

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
+import { collectGenres } from '@/lib/genres.js'
 import GameCard from '@/features/catalog/game-card.jsx'
 import Marquee from '@/ui/marquee.jsx'
 import StarRating from '@/ui/star-rating.jsx'
@@ -36,20 +37,25 @@ export default function LandingPage() {
     api.listGames().then(setGames).catch(() => setGames([]))
   }, [])
 
-  const categories = useMemo(() => {
-    const set = new Set()
-    games.forEach((g) => (g.genre || '').split(',').forEach((p) => {
-      const n = p.trim()
-      if (n) set.add(n)
-    }))
-    return Array.from(set).slice(0, 10)
+  // So os dez primeiros: sao chips de categoria numa vitrine, nao um filtro
+  // completo (esse fica no catalogo).
+  const categories = useMemo(() => collectGenres(games).slice(0, 10), [games])
+
+  // O jogo mais bem avaliado, entre os que TEM avaliacao - sem o filtro, um jogo
+  // sem nota nenhuma (media 0) competiria e nunca ganharia, mas jogos empatados
+  // em 0 poluiriam a comparacao.
+  const topRated = useMemo(() => {
+    const avaliados = games.filter((game) => game.reviewCount > 0)
+    const doMaiorParaOMenor = [...avaliados].sort(
+      (a, b) => b.averageRating - a.averageRating,
+    )
+    return doMaiorParaOMenor[0]
   }, [games])
 
-  const topRated = useMemo(
-    () => games.filter((g) => g.reviewCount > 0).sort((a, b) => b.averageRating - a.averageRating)[0],
-    [games],
+  const totalReviews = games.reduce(
+    (total, game) => total + (game.reviewCount || 0),
+    0,
   )
-  const totalReviews = games.reduce((s, g) => s + (g.reviewCount || 0), 0)
   const heroCovers = games.slice(0, 6)
   const preview = games.slice(0, 8)
 
@@ -82,13 +88,13 @@ export default function LandingPage() {
           {/* visual: colagem de capas reais do catalogo */}
           {heroCovers.length >= 3 && (
             <div className="mt-16 grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {heroCovers.map((g, i) => (
+              {heroCovers.map((game, index) => (
                 <Link
-                  key={g.id}
-                  to={`/games/${g.id}`}
-                  className={`rounded-xl overflow-hidden border border-line transition hover:border-accent ${i % 2 ? 'sm:translate-y-4' : ''}`}
+                  key={game.id}
+                  to={`/games/${game.id}`}
+                  className={`rounded-xl overflow-hidden border border-line transition hover:border-accent ${index % 2 ? 'sm:translate-y-4' : ''}`}
                 >
-                  <img src={g.coverUrl} alt={g.title} className="w-full aspect-[3/4] object-cover" />
+                  <img src={game.coverUrl} alt={game.title} className="w-full aspect-[3/4] object-cover" />
                 </Link>
               ))}
             </div>

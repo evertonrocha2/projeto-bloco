@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Plus, Check } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
+import { parseGenres } from '@/lib/genres.js'
 import StarRating from '@/ui/star-rating.jsx'
 import Spinner from '@/ui/spinner.jsx'
 import { btnPrimary, btnGhost, field, card } from '@/lib/ui.js'
@@ -28,7 +29,7 @@ export default function GameDetailPage() {
   const [collMsg, setCollMsg] = useState(null)
 
   function loadGame() {
-    api.getGame(id).then(setGame).catch((e) => setError(e.message))
+    api.getGame(id).then(setGame).catch((erro) => setError(erro.message))
   }
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function GameDetailPage() {
   if (error) return <div className={wrap}><p className="text-red-500 font-medium">{error}</p></div>
   if (!game) return <div className={wrap}><Spinner /></div>
 
-  const genres = (game.genre || '').split(',').map((g) => g.trim()).filter(Boolean)
+  const genres = parseGenres(game.genre)
 
   return (
     <div className={wrap}>
@@ -92,8 +93,8 @@ export default function GameDetailPage() {
             </span>
           </div>
           <div className="flex flex-wrap gap-2 mt-4">
-            {genres.map((g) => (
-              <span key={g} className="text-xs font-semibold text-slate bg-mist border border-line rounded-full px-3 py-1">{g}</span>
+            {genres.map((genre) => (
+              <span key={genre} className="text-xs font-semibold text-slate bg-mist border border-line rounded-full px-3 py-1">{genre}</span>
             ))}
           </div>
           {game.description && <p className="text-slate leading-relaxed mt-5">{game.description}</p>}
@@ -110,7 +111,7 @@ export default function GameDetailPage() {
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-ink">Status</label>
             <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${field} w-48`}>
-              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+              {STATUS_OPTIONS.map((opcao) => <option key={opcao} value={opcao}>{opcao}</option>)}
             </select>
           </div>
           <button type="submit" className={btnPrimary}>

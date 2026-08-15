@@ -24,7 +24,7 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
 
   // filtra pelo texto digitado
   const filtered = useMemo(
-    () => games.filter((g) => g.title.toLowerCase().includes(search.toLowerCase())),
+    () => games.filter((game) => game.title.toLowerCase().includes(search.toLowerCase())),
     [games, search],
   )
 
@@ -72,21 +72,21 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
         {/* lista de jogos */}
         <div className="overflow-y-auto p-2 flex-1">
           {filtered.length === 0 && <p className="text-sm text-slate p-3">Nenhum jogo encontrado.</p>}
-          {filtered.map((g) => {
-            const active = selected?.id === g.id
+          {filtered.map((game) => {
+            const active = selected?.id === game.id
             return (
               <button
-                key={g.id}
-                onClick={() => setSelected(g)}
+                key={game.id}
+                onClick={() => setSelected(game)}
                 className={
                   'w-full flex items-center gap-3 p-2 rounded-lg text-left transition cursor-pointer ' +
                   (active ? 'bg-accent-soft' : 'hover:bg-mist')
                 }
               >
-                <img src={g.coverUrl} alt="" className="h-10 w-16 object-cover rounded border border-line shrink-0" />
+                <img src={game.coverUrl} alt="" className="h-10 w-16 object-cover rounded border border-line shrink-0" />
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-semibold text-ink truncate">{g.title}</span>
-                  <span className="block text-xs text-slate truncate">{g.genre}</span>
+                  <span className="block text-sm font-semibold text-ink truncate">{game.title}</span>
+                  <span className="block text-xs text-slate truncate">{game.genre}</span>
                 </span>
                 {active && <Check size={16} className="text-accent shrink-0" />}
               </button>
@@ -104,7 +104,7 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-slate">Status</label>
               <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${field} w-40`}>
-                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                {STATUS_OPTIONS.map((opcao) => <option key={opcao} value={opcao}>{opcao}</option>)}
               </select>
             </div>
             <button onClick={handleAdd} disabled={saving} className={`${btnPrimary} !py-2.5`}>
