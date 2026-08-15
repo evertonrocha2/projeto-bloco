@@ -1,9 +1,21 @@
 // Camada que fala com o back-end. Toda chamada HTTP do front passa por aqui,
 // entao a regra de "como montar a requisicao" fica num lugar so.
 
-// Por padrao aponta pro back-end local na porta 8080. Da pra trocar criando um
-// arquivo .env com VITE_API_URL=... (util se o back-end subir em outra porta).
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+// Aponta pro API GATEWAY (porta 8090), e nao mais direto pro back-end na 8080.
+//
+// Mudou no TP3, e essa unica linha e o que o front precisou saber sobre a
+// arquitetura ter virado distribuida. O gateway olha o caminho da URL e decide o
+// destino: /api/recommendations/** vai pro microsservico de recomendacoes, todo o
+// resto vai pro monolito.
+//
+// Por que passar tudo pelo gateway em vez de o front conhecer os dois enderecos:
+//   - um endereco so aqui; servico novo no futuro nao mexe no front;
+//   - CORS resolvido num lugar so (no gateway), nao em cada servico;
+//   - as portas internas dos servicos nao ficam expostas ao navegador.
+//
+// Da pra apontar pra outro lugar com VITE_API_URL - inclusive direto pra 8080, se
+// alguem quiser rodar so o monolito, sem a stack distribuida.
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090'
 
 // O token JWT fica no localStorage pra sobreviver a um F5 na pagina.
 export function getToken() {
@@ -47,4 +59,25 @@ export const api = {
   getCollection: (username) => request(`/api/users/${username}/collection`),
   addToCollection: (body) =>
     request('/api/collection', { method: 'POST', body: JSON.stringify(body) }),
+
+  // --- Microsservico de recomendacoes (TP3) ---
+  // Estas quatro chamadas saem do mesmo request() das de cima e, do ponto de vista
+  // do front, sao iguais as outras. So que o gateway as encaminha pra OUTRO
+  // processo, com OUTRO banco. Ter conseguido acrescentar um servico ao sistema sem
+  // mudar a forma de chamar a API e exatamente o resultado que o gateway entrega.
+  getRecommendations: (username) => request(`/api/recommendations/${username}`),
+
+  // Recalcula do zero. Precisa de token (o gateway barra sem ele).
+  refreshRecommendations: (username) =>
+    request(`/api/recommendations/${username}/refresh`, { method: 'POST' }),
+
+  // verdict: 'LIKED' ou 'DISMISSED'.
+  sendRecommendationFeedback: (username, body) =>
+    request(`/api/recommendations/${username}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  // O perfil de gosto calculado - e o que deixa a recomendacao explicavel.
+  getTasteProfile: (username) => request(`/api/recommendations/${username}/taste-profile`),
 }
