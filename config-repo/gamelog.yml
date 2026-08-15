@@ -1,0 +1,18 @@
+# Configuracao do monolito GameLog servida centralmente.
+#
+# O monolito tambem virou cliente do Config Server no TP3. Isso e proposital:
+# configuracao distribuida nao e "coisa de microsservico", e uma propriedade do
+# sistema. Se o monolito continuasse fora, teriamos dois lugares pra procurar
+# quando um valor estivesse estranho.
+#
+# Importante: o que esta aqui tem prioridade sobre o application.properties
+# local do monolito. Os segredos (JWT_SECRET, RAWG_API_KEY) continuam vindo de
+# variavel de ambiente e NAO entram neste arquivo - Config Server centraliza
+# configuracao, nao e cofre de segredo.
+
+app:
+  jwt:
+    # Validade do token: 24h em milissegundos. Mesmo valor do application.properties
+    # local; a diferenca e que agora da pra mudar a politica de expiracao de forma
+    # centralizada, sem tocar no jar do monolito.
+    expiration-ms: 86400000
