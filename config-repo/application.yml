@@ -1,0 +1,35 @@
+# Configuracao COMUM a todos os servicos que pedem config pro Config Server.
+# O nome "application" e especial: o Config Server serve este arquivo pra
+# qualquer cliente, independente do nome da aplicacao. O arquivo especifico do
+# servico (ex: recommendation-service.yml) tem prioridade sobre este.
+#
+# Antes do TP3 cada aplicacao carregaria a sua propria copia destes valores. Com
+# a configuracao centralizada, mudar o endereco do Eureka - por exemplo - e uma
+# edicao em UM arquivo, e nao uma cacada em cinco.
+
+eureka:
+  client:
+    service-url:
+      # Onde os servicos se registram e onde procuram uns aos outros.
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    # Em ambiente local o hostname da maquina as vezes nao resolve; o IP e mais
+    # confiavel pra um servico achar o outro.
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # health: usado pra saber se o servico esta de pe.
+        # refresh: e o que permite recarregar a configuracao sem reiniciar.
+        # circuitbreakers: mostra o estado dos disjuntores do Resilience4j.
+        include: health,info,refresh,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
