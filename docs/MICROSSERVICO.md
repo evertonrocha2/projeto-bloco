@@ -704,17 +704,22 @@ observado.
 
 ## 11. Front-end
 
-`api.js` mudou **uma linha**: `BASE_URL` passou de `localhost:8080` para
-`localhost:8090`. Foi tudo o que o front precisou saber sobre a arquitetura ter
-virado distribuída.
+O endereço base mudou **uma linha**: de `localhost:8080` para `localhost:8090`.
+Foi tudo o que o front precisou saber sobre a arquitetura ter virado distribuída
+— o gateway decide, pelo caminho da URL, qual serviço responde.
 
 | Arquivo | Papel |
 |---|---|
-| `pages/RecommendationsPage.jsx` | Rota `/recommendations`. Exige login — recomendação é pessoal. |
-| `components/RecommendationCard.jsx` | Capa, pontuação, o "porquê", botões 👍 / ✕ |
-| `components/TasteProfileChart.jsx` | Barras de peso por gênero — torna a recomendação auditável |
-| `components/ServiceStatusBadge.jsx` | "ao vivo" vs "modo degradado" |
-| `recommendationText.js` | Funções puras que compõem as frases (testadas) |
+| `pages/recommendations-page.jsx` | Rota `/recommendations`. Exige login — recomendação é pessoal. |
+| `features/recommendations/recommendation-card.jsx` | Capa, pontuação, o "porquê", botões 👍 / ✕ |
+| `features/recommendations/taste-profile-chart.jsx` | Barras de peso por gênero — torna a recomendação auditável |
+| `features/recommendations/service-status-badge.jsx` | "ao vivo" vs "modo degradado" |
+| `features/recommendations/recommendation-text.js` | Funções puras que compõem as frases (testadas) |
+| `lib/api/recommendations.js` | As quatro chamadas do microsserviço, isoladas das do monólito |
+
+Tudo o que é específico desta funcionalidade mora em `features/recommendations/`
+— inclusive o teste. A estrutura do front espelha a do back: o que pertence a um
+contexto fica junto.
 
 `ServiceStatusBadge` é a arquitetura distribuída ficando **visível na tela**: com o
 monólito fora do ar, a página continua listando jogos e o selo muda para "modo
