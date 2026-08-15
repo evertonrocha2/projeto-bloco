@@ -245,22 +245,48 @@ flowchart LR
 
 ## 7. Front-end em resumo
 
-O React é organizado de forma parecida com o back, em responsabilidades:
+O React é organizado de forma parecida com o back, em responsabilidades. Os
+arquivos usam **kebab-case**; os nomes dos componentes no código continuam em
+PascalCase, porque o JSX distingue componente de tag HTML pela inicial maiúscula.
 
-- **`api.js`** — único lugar que sabe falar HTTP. Toda chamada passa por ele, que
-  anexa o token e trata erros. É o "repositório" do front.
-- **`auth.jsx`** — guarda o estado de login (quem está logado) e compartilha com
-  o app todo via Context, sem precisar passar de componente em componente.
-- **`pages/`** — uma tela por arquivo. A raiz `/` é a landing page; o catálogo
-  fica em `/games`, e ainda tem jogo, perfil, login e cadastro.
-- **`components/`** — pedaços reaproveitáveis (estrelas, barra de navegação,
-  card de jogo, spinner, rodapé).
+```
+frontend/src/
+├── main.jsx · app.jsx · index.css
+├── lib/                    ← infraestrutura que todas as telas usam
+│   ├── auth.jsx            ← estado de login, compartilhado via Context
+│   ├── ui.js               ← classes Tailwind reaproveitadas
+│   └── api/                ← um arquivo por domínio da API
+│       ├── client.js       ← request(), token, endereço base
+│       ├── auth.js · games.js · users.js · collection.js
+│       ├── recommendations.js   ← chamadas do MICROSSERVIÇO
+│       └── index.js        ← junta tudo no objeto `api`
+├── ui/                     ← genérico: spinner, estrelas, marquee
+├── layout/                 ← navbar, footer
+├── features/               ← específico de uma funcionalidade
+│   ├── catalog/ · collection/ · recommendations/
+└── pages/                  ← uma tela por arquivo
+```
+
+O critério que separa `ui/` de `features/`: **esse componente faria sentido num
+app que não é o GameLog?** `Spinner` e `StarRating` sim — são peças genéricas.
+`RecommendationCard` não: ele conhece pontuação e gêneros. Antes os dois tipos
+dividiam a mesma pasta, o que escondia essa diferença.
+
+Dentro de `lib/api/`, as chamadas do microsserviço ficam num arquivo próprio,
+espelhando a divisão que existe no back-end. As telas continuam escrevendo
+`api.listGames()` e `api.getRecommendations()` — a divisão é organização interna
+da camada, não algo que a página precise saber.
+
+Imports usam o alias `@/` (configurado no `vite.config.js`), então mover um
+arquivo de pasta não quebra quem o importa.
 
 ```mermaid
 flowchart TD
-    pages[Páginas<br/>GamesPage, GameDetailPage...] --> apijs[api.js<br/>chamadas HTTP]
-    pages --> auth[auth.jsx<br/>estado de login]
-    apijs --> backend[(API REST)]
+    pages[Páginas<br/>games-page, game-detail-page...] --> apijs[lib/api<br/>chamadas HTTP]
+    pages --> auth[lib/auth<br/>estado de login]
+    pages --> feat[features/<br/>componentes da funcionalidade]
+    pages --> uikit[ui/ e layout/<br/>peças genéricas]
+    apijs --> gw[(API Gateway)]
 ```
 
 ---
