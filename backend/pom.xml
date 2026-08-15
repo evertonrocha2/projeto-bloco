@@ -4,25 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Herdamos do starter-parent do Spring Boot. Ele ja traz versoes testadas -->
-    <!-- de praticamente todas as dependencias, entao a gente nao precisa ficar -->
-    <!-- escolhendo versao de cada uma na mao. -->
+    <!-- Antes este modulo herdava direto do spring-boot-starter-parent. No TP3 ele
+         passou a herdar do POM pai do projeto (../pom.xml), que por sua vez herda
+         do starter-parent. O motivo: com cinco aplicacoes Spring Boot no
+         repositorio, a versao do Boot e do Spring Cloud precisa estar declarada
+         num lugar unico - servicos que conversam entre si com versoes diferentes
+         de biblioteca e um problema chato de achar. -->
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version>
-        <relativePath/>
+        <groupId>com.gamelog</groupId>
+        <artifactId>projeto-bloco</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.gamelog</groupId>
     <artifactId>gamelog</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>gamelog</name>
-    <description>GameLog - um Letterboxd de jogos</description>
-
-    <properties>
-        <java.version>21</java.version>
-    </properties>
+    <description>GameLog - um Letterboxd de jogos (monolito modular)</description>
 
     <dependencies>
         <!-- Web: controllers REST, Tomcat embutido, Jackson pra JSON -->
@@ -89,6 +86,27 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- === Spring Cloud (TP3) ===
+             O monolito nao virou microsservico, mas passou a fazer PARTE de um
+             sistema distribuido: ele se registra no Eureka (pra que o
+             recommendation-service o encontre pelo nome, sem endereco fixo) e
+             busca configuracao no Config Server. -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+
+        <!-- Expoe /actuator/health, usado pelo Eureka e pelo gateway pra saber se
+             o servico esta saudavel. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Testes -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -108,6 +126,21 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Os testes desligam Config Server e Eureka.
+                 Um teste tem que dar o mesmo resultado com ou sem a
+                 infraestrutura no ar - se "mvn test" passasse so em quem tem os
+                 cinco servicos rodando, o build deixaria de ser confiavel. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <spring.cloud.config.enabled>false</spring.cloud.config.enabled>
+                        <eureka.client.enabled>false</eureka.client.enabled>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>
