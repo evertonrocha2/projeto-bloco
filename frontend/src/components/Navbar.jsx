@@ -30,6 +30,8 @@ export default function Navbar() {
           <NavLink to="/games" className={link}>Catálogo</NavLink>
           {isAuthenticated ? (
             <>
+              {/* So pra quem esta logado: recomendacao depende de saber quem e a pessoa */}
+              <NavLink to="/recommendations" className={link}>Recomendados</NavLink>
               <NavLink to={`/users/${username}`} className={link}>{username}</NavLink>
               <button onClick={handleLogout} className="text-sm font-semibold text-slate hover:text-ink transition cursor-pointer">
                 Sair

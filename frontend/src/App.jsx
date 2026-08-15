@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage.jsx'
 import GamesPage from './pages/GamesPage.jsx'
 import GameDetailPage from './pages/GameDetailPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
+import RecommendationsPage from './pages/RecommendationsPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 
@@ -21,6 +22,8 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/games/:id" element={<GameDetailPage />} />
+          {/* Tela servida pelo microsservico de recomendacoes (via gateway) */}
+          <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/users/:username" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
