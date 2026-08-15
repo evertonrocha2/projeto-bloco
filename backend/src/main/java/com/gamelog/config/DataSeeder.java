@@ -94,8 +94,21 @@ public class DataSeeder implements CommandLineRunner {
 
     // Lista de reserva, usada so se a API externa nao responder. O primeiro
     // parametro (externalId) vai null porque esses nao vieram da RAWG.
+    //
+    // Ate o TP2 esta lista tinha tres jogos - o bastante pra aplicacao nao abrir
+    // vazia. Com o microsservico de recomendacoes do TP3 isso deixou de bastar:
+    // o usuario de demonstracao avalia os tres primeiros jogos e adiciona os
+    // mesmos tres a colecao, entao NAO SOBRAVA CANDIDATO NENHUM. O algoritmo
+    // respondia corretamente com lista vazia, e quem subisse o projeto sem chave
+    // da RAWG concluiria que a feature nao funciona.
+    //
+    // Os generos foram escolhidos pra que a recomendacao seja observavel: alguns
+    // jogos compartilham genero com os que o demo avaliou bem (e devem subir no
+    // ranking), outros nao (e devem ficar embaixo). Da pra conferir o algoritmo
+    // trabalhando sem precisar de chave de API.
     private List<Game> fallbackGames() {
         return List.of(
+                // --- os tres primeiros sao os que o usuario demo avalia ---
                 new Game(null, "The Legend of Zelda: Breath of the Wild",
                         "Um mundo aberto enorme onde voce explora do seu jeito.",
                         2017, "Aventura",
@@ -107,7 +120,52 @@ public class DataSeeder implements CommandLineRunner {
                 new Game(null, "Hades",
                         "Roguelike onde voce tenta escapar do submundo grego.",
                         2020, "Roguelike",
-                        "https://upload.wikimedia.org/wikipedia/en/c/cc/Hades_cover_art.jpg")
+                        "https://upload.wikimedia.org/wikipedia/en/c/cc/Hades_cover_art.jpg"),
+
+                // --- daqui pra baixo, os candidatos a recomendacao ---
+                // Compartilham "Aventura" e "RPG de Acao" com o que o demo curtiu,
+                // entao aparecem no topo das recomendacoes dele.
+                new Game(null, "God of War",
+                        "Kratos e Atreus atravessam a mitologia nordica.",
+                        2018, "RPG de Acao, Aventura",
+                        "https://upload.wikimedia.org/wikipedia/en/a/a7/God_of_War_4_cover.jpg"),
+                new Game(null, "The Witcher 3: Wild Hunt",
+                        "Geralt procura Ciri num mundo aberto cheio de escolhas.",
+                        2015, "RPG, Aventura",
+                        "https://upload.wikimedia.org/wikipedia/en/0/0c/Witcher_3_cover_art.jpg"),
+                new Game(null, "Hollow Knight",
+                        "Metroidvania desenhado a mao num reino de insetos.",
+                        2017, "Metroidvania, Aventura",
+                        "https://upload.wikimedia.org/wikipedia/en/0/04/Hollow_Knight_first_cover_art.webp"),
+                new Game(null, "Sekiro: Shadows Die Twice",
+                        "Acao com espadas e parry no Japao do periodo Sengoku.",
+                        2019, "RPG de Acao",
+                        "https://upload.wikimedia.org/wikipedia/en/6/6e/Sekiro_art.jpg"),
+
+                // Genero proximo do que ele avaliou pior (Roguelike, nota 3):
+                // aparecem, mas mais embaixo.
+                new Game(null, "Dead Cells",
+                        "Roguelike de acao rapida onde morrer e parte do plano.",
+                        2018, "Roguelike, Metroidvania",
+                        "https://upload.wikimedia.org/wikipedia/en/0/09/Dead_cells_cover_art.jpg"),
+                new Game(null, "Slay the Spire",
+                        "Baralho de cartas que sobe uma torre, uma escolha por vez.",
+                        2019, "Roguelike, Cartas",
+                        "https://upload.wikimedia.org/wikipedia/en/d/d1/Slay_the_Spire_cover_art.jpg"),
+
+                // Sem afinidade com o perfil do demo: servem de contraste no ranking.
+                new Game(null, "Celeste",
+                        "Plataforma dificil sobre subir uma montanha e a si mesmo.",
+                        2018, "Plataforma, Indie",
+                        "https://upload.wikimedia.org/wikipedia/en/2/20/Celeste_box_art_pc.png"),
+                new Game(null, "Stardew Valley",
+                        "Voce herda uma fazenda e recomeca a vida no campo.",
+                        2016, "Simulacao, Indie",
+                        "https://upload.wikimedia.org/wikipedia/en/f/fd/Logo_of_Stardew_Valley.png"),
+                new Game(null, "Disco Elysium",
+                        "RPG de detetive onde a conversa e o combate.",
+                        2019, "RPG",
+                        "https://upload.wikimedia.org/wikipedia/en/8/85/Disco_Elysium_cover_art.jpg")
         );
     }
 }
