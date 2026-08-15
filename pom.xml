@@ -45,6 +45,7 @@
         <!-- Infraestrutura Spring Cloud -->
         <module>services/config-server</module>
         <module>services/discovery-server</module>
+        <module>services/api-gateway</module>
 
         <!-- O microsservico desta entrega -->
         <module>services/recommendation-service</module>
