@@ -1,0 +1,51 @@
+# Configuracao do microsservico de recomendacoes.
+#
+# Estes numeros sao a regra de negocio do algoritmo, e o motivo de estarem AQUI
+# e nao no codigo: junto com @RefreshScope no ScoringProperties, editar este
+# arquivo e chamar POST /actuator/refresh muda como as recomendacoes sao
+# calculadas SEM recompilar e SEM reiniciar o servico. E a demonstracao concreta
+# do que "configuracao distribuida" resolve.
+
+recommendation:
+  scoring:
+    # Nota minima pra considerar que o usuario GOSTOU do jogo. Abaixo disso a
+    # avaliacao nao contribui pro perfil de gosto (mas ainda exclui o jogo das
+    # recomendacoes, porque ele ja foi jogado).
+    min-rating: 3
+    # Peso de um jogo que esta so na colecao, sem avaliacao. Vale menos que uma
+    # nota alta: ter o jogo diz menos sobre gosto do que ter gostado dele.
+    collection-weight: 0.5
+    # Reforco aplicado ao genero de um jogo que o usuario marcou como "gostei"
+    # na propria tela de recomendacoes.
+    liked-boost: 1.5
+    # Quanto a afinidade de genero pesa no score final (max 3.0 de 5.0).
+    genre-weight: 3.0
+    # Quanto a nota media da comunidade pesa no score final (max 2.0 de 5.0).
+    community-weight: 2.0
+    # Quantas recomendacoes devolver.
+    max-results: 8
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+    instances:
+      # "gamelog" e o nome do servico chamado (o monolito). Quando as chamadas
+      # pra ele comecam a falhar, o disjuntor abre e o servico passa a responder
+      # pelo fallback em vez de ficar esperando timeout a cada requisicao.
+      gamelog:
+        sliding-window-size: 5
+        # Sem isso o disjuntor so avaliaria depois de 100 chamadas (padrao), o
+        # que na pratica nunca abriria numa demonstracao.
+        minimum-number-of-calls: 3
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 2
+
+  timelimiter:
+    instances:
+      gamelog:
+        # Se o monolito nao respondeu em 3s, trata como falha. Melhor devolver
+        # recomendacao antiga rapido do que deixar o usuario esperando.
+        timeout-duration: 3s
