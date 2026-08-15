@@ -44,6 +44,7 @@
 
         <!-- Infraestrutura Spring Cloud -->
         <module>services/config-server</module>
+        <module>services/discovery-server</module>
 
         <!-- O microsservico desta entrega -->
     </modules>

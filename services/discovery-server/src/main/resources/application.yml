@@ -1,0 +1,33 @@
+# Servidor de descoberta (Eureka). Sobe depois do Config Server e antes dos
+# servicos de negocio, porque e nele que eles se registram.
+server:
+  port: 8761
+
+spring:
+  application:
+    name: discovery-server
+  config:
+    # "optional:" e a parte importante: se o Config Server nao estiver no ar, a
+    # aplicacao registra um aviso e sobe com a configuracao local, em vez de
+    # falhar. Sem isso, a ordem de startup viraria uma armadilha - um servico
+    # fora do ar derrubaria todos os outros em cascata.
+    import: optional:configserver:http://localhost:8888
+
+eureka:
+  client:
+    # O proprio Eureka nao se registra nem busca registro: ele E o registro.
+    # Este valor tambem esta repetido em config-repo/discovery-server.yml, e a
+    # repeticao e deliberada: config-repo/application.yml manda
+    # register-with-eureka=true pra TODOS os clientes, e configuracao do servidor
+    # tem prioridade sobre este arquivo local. Sem o arquivo especifico do
+    # servico, o Eureka tentaria se registrar em si mesmo.
+    register-with-eureka: false
+    fetch-registry: false
+
+  server:
+    # Auto-preservacao: em producao o Eureka para de expulsar instancias quando
+    # perde muitos heartbeats de uma vez (protege contra falha de rede). Em
+    # desenvolvimento isso e um estorvo - servico derrubado continua aparecendo
+    # na lista por minutos, o que confunde bastante numa demonstracao.
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 5000
