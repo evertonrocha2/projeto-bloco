@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- POM pai (agregador) do Projeto de Bloco.
+         Ate o TP2 existia um projeto Maven so (o monolito em backend/). No TP3 o
+         sistema passou a ter cinco aplicacoes Spring Boot, entao a gente promoveu
+         a raiz a projeto multi-modulo. Ganhos concretos:
+           - "mvn test" na raiz roda os testes de TODOS os servicos de uma vez;
+           - a versao do Spring Boot e do trem do Spring Cloud fica declarada em
+             UM lugar so, entao nao existe risco de dois servicos usarem versoes
+             diferentes e quebrarem na comunicacao. -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.gamelog</groupId>
+    <artifactId>projeto-bloco</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <!-- packaging "pom": este projeto nao gera jar, ele so agrega os modulos. -->
+    <packaging>pom</packaging>
+    <name>projeto-bloco</name>
+    <description>GameLog - monolito modular + microsservico de recomendacoes</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <!-- Trem de release do Spring Cloud. A escolha NAO e livre: cada trem
+             suporta uma faixa de versoes do Spring Boot. O 2023.0.x e a linha
+             compativel com Boot 3.3.x (que e a nossa). Subir pra 2024.0.x
+             exigiria subir o Boot pra 3.4.x tambem. -->
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
+    </properties>
+
+    <modules>
+        <!-- O monolito modular do TP1/TP2. Continua em backend/ de proposito:
+             os caminhos do banco (./data/gamelog) e as instrucoes do README
+             seguem valendo exatamente como antes. -->
+        <module>backend</module>
+
+        <!-- Infraestrutura Spring Cloud -->
+
+        <!-- O microsservico desta entrega -->
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Importa o BOM do Spring Cloud. A partir daqui os modulos declaram
+                 as dependencias de Spring Cloud SEM versao, e o BOM resolve. -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
