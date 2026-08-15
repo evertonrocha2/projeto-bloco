@@ -1,0 +1,16 @@
+# Configuracao especifica do Eureka Server.
+#
+# Este arquivo existe por causa da hierarquia de precedencia do Spring Cloud
+# Config: o arquivo com o NOME DO SERVICO tem prioridade sobre o application.yml
+# compartilhado. Como o application.yml manda todo mundo se registrar no Eureka
+# (register-with-eureka: true), sem este arquivo o proprio Eureka receberia essa
+# instrucao e tentaria se registrar em si mesmo.
+#
+# E um bom exemplo de por que a ordem de precedencia importa quando a
+# configuracao e centralizada: o valor "comum" quase sempre esta certo, e as
+# excecoes se resolvem no arquivo do servico - nao removendo a regra geral.
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
