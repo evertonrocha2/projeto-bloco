@@ -1,49 +1,107 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
-import { btnPrimary, field, card } from '@/lib/ui.js'
+import AuthLayout from '@/layout/auth-layout.jsx'
+import { btnPrimary, fieldLarge } from '@/lib/ui.js'
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ username: '', email: '', password: '', bio: '' })
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [bio, setBio] = useState('')
   const [error, setError] = useState(null)
+  const [criando, setCriando] = useState(false)
 
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  function update(event) {
-    setForm({ ...form, [event.target.name]: event.target.value })
-  }
-
   async function handleSubmit(event) {
     event.preventDefault()
     setError(null)
+    setCriando(true)
     try {
-      const data = await api.register(form)
+      const data = await api.register({ username, email, password, bio })
       login(data.token, data.username)
       navigate('/')
-    } catch (err) {
-      setError(err.message)
+    } catch (erro) {
+      setError(erro.message)
+    } finally {
+      setCriando(false)
     }
   }
 
   return (
-    <div className="max-w-md mx-auto px-6 py-20">
-      <div className={`${card} p-8`}>
-        <h1 className="font-display font-bold text-2xl text-ink">Criar conta</h1>
-        <p className="text-slate text-sm mt-1">Leva menos de um minuto.</p>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 mt-6">
-          <input name="username" className={field} placeholder="Usuário" value={form.username} onChange={update} />
-          <input name="email" type="email" className={field} placeholder="Email" value={form.email} onChange={update} />
-          <input name="password" type="password" className={field} placeholder="Senha (mín. 6)" value={form.password} onChange={update} />
-          <textarea name="bio" className={`${field} resize-y`} placeholder="Fala um pouco de você (opcional)" value={form.bio} onChange={update} rows={2} />
-          {error && <p className="text-danger text-sm font-medium">{error}</p>}
-          <button type="submit" className={`${btnPrimary} w-full`}>Criar conta</button>
-        </form>
-        <p className="text-slate text-sm mt-5">
-          Já tem conta? <Link to="/login" className="text-accent font-semibold">Entrar</Link>
+    <AuthLayout
+      eyebrow="leva um minuto"
+      title="Criar conta"
+      subtitle="Depois é só marcar os jogos que você já zerou."
+      footer={
+        <p className="text-sm text-slate">
+          Já tem conta?{' '}
+          <Link to="/login" className="text-accent font-medium hover:underline">
+            Entrar
+          </Link>
         </p>
-      </div>
-    </div>
+      }
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <label className="flex flex-col gap-2">
+          <span className="eyebrow">usuário</span>
+          <input
+            className={fieldLarge}
+            placeholder="como você quer ser chamado"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </label>
+
+        <label className="flex flex-col gap-2">
+          <span className="eyebrow">email</span>
+          <input
+            className={fieldLarge}
+            type="email"
+            placeholder="voce@email.com"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </label>
+
+        <label className="flex flex-col gap-2">
+          <span className="eyebrow">senha</span>
+          <input
+            className={fieldLarge}
+            type="password"
+            placeholder="mínimo 6 caracteres"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+
+        <label className="flex flex-col gap-2">
+          <span className="eyebrow">sobre você · opcional</span>
+          <textarea
+            className={`${fieldLarge} resize-y min-h-24`}
+            placeholder="que tipo de jogo te ganha?"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+          />
+        </label>
+
+        {error && (
+          <p role="alert" className="text-danger text-sm font-medium border-l-2 border-danger pl-3">
+            {error}
+          </p>
+        )}
+
+        <button type="submit" disabled={criando} className={`${btnPrimary} w-full mt-2 py-4`}>
+          {criando ? 'Criando...' : <>Criar conta <ArrowRight size={18} /></>}
+        </button>
+      </form>
+    </AuthLayout>
   )
 }

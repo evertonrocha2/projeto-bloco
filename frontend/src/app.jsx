@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from '@/layout/navbar.jsx'
 import Footer from '@/layout/footer.jsx'
 import LandingPage from '@/pages/landing-page.jsx'
@@ -15,9 +15,15 @@ import RegisterPage from '@/pages/register-page.jsx'
 // que empurra o footer pro fim sempre - mesmo em paginas curtas, tipo o login,
 // ele nao fica flutuando no meio.
 export default function App() {
+  // As telas de acesso trazem a propria moldura (AuthLayout): arte em tela cheia,
+  // cabecalho minimo e nada mais pra clicar. Menu e rodape sao distracao num
+  // momento em que a pessoa veio fazer uma coisa so.
+  const { pathname } = useLocation()
+  const telaDeAcesso = pathname === '/login' || pathname === '/register'
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      {!telaDeAcesso && <Navbar />}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -32,7 +38,7 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </main>
-      <Footer />
+      {!telaDeAcesso && <Footer />}
     </div>
   )
 }

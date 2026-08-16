@@ -250,6 +250,48 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ==================== PARALLAX ====================
+          Tratamento diferente das outras duas artes: aqui a imagem fica FIXA
+          enquanto a pagina rola por cima (background-attachment: fixed). O efeito
+          e de olhar por uma janela em movimento - combina com a cena, que e
+          alguem parado diante de um mundo grande.
+
+          Sem mascara desta vez: a arte aparece inteira, contida por reguas em
+          cima e embaixo. O que garante a leitura do texto e a camada escura no
+          meio, nao um apagamento.
+
+          background-attachment: fixed e ignorado no iOS e custa caro em mobile,
+          entao no lugar dele o telefone recebe uma imagem normal, centrada -
+          degrada pra algo bom em vez de quebrar. */}
+      <section className="relative border-y border-line overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-cover bg-center sm:bg-fixed"
+          style={{
+            backgroundImage: 'url(/background-4.jpg)',
+            filter: 'brightness(0.42) saturate(0.8)',
+          }}
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-canvas/45" />
+
+        <div className={`${wrap} relative py-32 sm:py-40`} data-reveal>
+          <div className="max-w-2xl">
+            <p className="eyebrow">o catálogo</p>
+            <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
+              Tem mais jogo aí fora do que você consegue jogar.
+            </h2>
+            <p className="text-lg text-slate mt-6 leading-relaxed">
+              O que não falta é opção — falta saber qual vale o seu tempo. Comece
+              registrando o que você já jogou: é assim que as indicações passam a
+              fazer sentido.
+            </p>
+            <Link to="/galeria" className={`${btnGhost} mt-9`}>
+              Ver a galeria <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ==================== EM DESTAQUE ====================
           Antes era uma grade de duas colunas: o poster (retrato) esticava a
           coluna da esquerda e deixava metade da direita vazia. Agora a capa e o
