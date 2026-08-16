@@ -57,14 +57,20 @@ export default function GamesPage() {
   const filtered = games.filter((game) => matchesSearch(game) && matchesGenre(game))
 
   if (loading) return <div className={wrap}><Spinner /></div>
-  if (error) return <div className={wrap}><p className="text-red-500 font-medium">{error}</p></div>
+  if (error) return <div className={wrap}><p className="text-danger font-medium">{error}</p></div>
 
   return (
     <div className={wrap}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-8 mb-8 border-b border-line">
         <div>
-          <h1 className="font-display font-extrabold text-3xl text-ink">Catálogo</h1>
-          <p className="text-slate mt-1.5">{games.length} jogos · escolha um pra ver os detalhes e avaliar.</p>
+          <p className="eyebrow">{games.length} títulos</p>
+          <h1 className="font-display font-extrabold text-4xl sm:text-5xl text-ink leading-[1.02] mt-3">
+            Catálogo
+          </h1>
+          <p className="text-slate mt-3 max-w-md leading-relaxed">
+            Abra um jogo pra ler o que a galera achou, deixar sua nota ou jogar ele
+            na sua coleção.
+          </p>
         </div>
         {isAuthenticated && (
           <button onClick={() => openAdd(null)} className={`${btnPrimary} !py-2.5 text-sm`}>
@@ -72,12 +78,11 @@ export default function GamesPage() {
           </button>
         )}
       </div>
-      <div className="mb-7" />
 
       <div className="relative max-w-md mb-6">
         <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate/60" />
         <input
-          className="w-full bg-canvas border border-line rounded-full pl-10 pr-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-slate/60 focus:border-accent focus:ring-4 focus:ring-accent/10"
+          className="w-full bg-canvas border border-line pl-10 pr-4 py-2.5 text-sm text-ink outline-none transition placeholder:text-slate/60 focus:border-accent focus:ring-4 focus:ring-accent/10"
           placeholder="Buscar por nome..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -92,10 +97,10 @@ export default function GamesPage() {
               key={genre}
               onClick={() => setActiveGenre(genre)}
               className={
-                'text-sm font-semibold px-4 py-1.5 rounded-full border transition cursor-pointer ' +
+                'text-sm font-medium px-4 py-2 border transition-colors cursor-pointer ' +
                 (active
-                  ? 'bg-ink text-white border-ink'
-                  : 'bg-canvas text-slate border-line hover:border-ink hover:text-ink')
+                  ? 'bg-accent text-canvas border-accent'
+                  : 'bg-mist text-slate border-line hover:border-accent hover:text-accent')
               }
             >
               {genre}

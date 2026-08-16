@@ -4,6 +4,7 @@ import { Clock, Plus } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
 import StarRating from '@/ui/star-rating.jsx'
+import GameCover from '@/ui/game-cover.jsx'
 import Spinner from '@/ui/spinner.jsx'
 import AddToCollectionModal from '@/features/collection/add-to-collection-modal.jsx'
 import { card, btnPrimary } from '@/lib/ui.js'
@@ -35,7 +36,7 @@ export default function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username])
 
-  if (error) return <div className={wrap}><p className="text-red-500 font-medium">{error}</p></div>
+  if (error) return <div className={wrap}><p className="text-danger font-medium">{error}</p></div>
   if (!profile) return <div className={wrap}><Spinner /></div>
 
   const memberSince = new Date(profile.createdAt).toLocaleDateString('pt-BR')
@@ -55,7 +56,7 @@ export default function ProfilePage() {
   return (
     <div className={wrap}>
       <header className="flex flex-wrap items-center gap-5 mb-10">
-        <span className="grid place-items-center h-16 w-16 shrink-0 rounded-2xl bg-ink text-white font-display font-extrabold text-2xl">
+        <span className="grid place-items-center h-16 w-16 shrink-0 bg-accent text-canvas font-display font-extrabold text-2xl">
           {profile.username.charAt(0).toUpperCase()}
         </span>
         <div>
@@ -78,7 +79,7 @@ export default function ProfilePage() {
             {profile.reviews.map((review) => (
               <li key={review.id} className={`${card} p-4 flex gap-4`}>
                 <Link to={`/games/${review.gameId}`} className="shrink-0">
-                  <img src={review.gameCoverUrl} alt="" className="h-16 w-24 object-cover rounded-lg border border-line" />
+                  <GameCover game={{ title: review.gameTitle, coverUrl: review.gameCoverUrl }} className="h-16 w-24 border border-line shrink-0" />
                 </Link>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-3 mb-1">
@@ -112,13 +113,13 @@ export default function ProfilePage() {
                 <Link
                   key={entry.id}
                   to={`/games/${entry.gameId}`}
-                  className="group block bg-canvas border border-line rounded-2xl overflow-hidden transition hover:border-accent"
+                  className="group block bg-canvas border border-line overflow-hidden transition hover:border-accent"
                 >
-                  <img src={entry.gameCoverUrl} alt={entry.gameTitle} loading="lazy" className="w-full aspect-video object-cover" />
+                  <GameCover game={{ title: entry.gameTitle, coverUrl: entry.gameCoverUrl }} className="aspect-video" />
                   <div className="p-3.5">
                     <h3 className="font-display font-bold text-sm text-ink leading-tight truncate" title={entry.gameTitle}>{entry.gameTitle}</h3>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs font-semibold text-accent bg-accent-soft rounded-full px-2.5 py-0.5">{entry.status}</span>
+                      <span className="text-xs font-semibold text-accent bg-accent-soft px-2.5 py-0.5">{entry.status}</span>
                       <span className="inline-flex items-center gap-1 text-xs text-slate">
                         <Clock size={12} /> {entry.hoursPlayed}h
                       </span>

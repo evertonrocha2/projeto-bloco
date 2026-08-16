@@ -17,12 +17,20 @@ export default function Marquee() {
   const items = [...PHRASES, ...PHRASES]
 
   return (
-    <div className="group overflow-hidden whitespace-nowrap bg-mist border-y border-line py-3">
+    // As bordas desvanecem nas pontas (mask lateral): sem isso o texto aparece e
+    // some cortado na beirada da tela, o que parece defeito de layout.
+    <div
+      className="group overflow-hidden whitespace-nowrap bg-mist border-y border-line py-3.5"
+      style={{
+        maskImage: 'linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)',
+      }}
+    >
       <div className="inline-flex items-center animate-marquee group-hover:[animation-play-state:paused]">
         {items.map((phrase, i) => (
-          <span key={i} className="inline-flex items-center text-sm font-medium text-slate">
+          <span key={i} className="inline-flex items-center text-sm text-slate">
             {phrase}
-            <Gamepad2 size={13} className="text-accent mx-5 shrink-0" />
+            <Gamepad2 size={12} className="text-accent mx-6 shrink-0" />
           </span>
         ))}
       </div>

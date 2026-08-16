@@ -1,19 +1,30 @@
 @import "tailwindcss";
 
-/* Tema claro, moderno e minimalista (inspirado em landings SaaS): muito branco, */
-/* cinzas suaves, um acento discreto. No Tailwind v4 a config fica aqui no CSS - */
-/* cada --color-* vira utilitario (bg-mist, text-slate, etc).                     */
-@theme {
-  --color-canvas: #ffffff;   /* fundo principal */
-  --color-mist: #f6f7f9;     /* faixas/seções claras */
-  --color-line: #e7e9ee;     /* bordas */
-  --color-ink: #0e1116;      /* títulos / texto forte */
-  --color-slate: #5b6472;    /* texto de apoio */
-  --color-accent: #6366f1;   /* acento (indigo), usado com parcimônia */
-  --color-accent-soft: #eef0fe;
+/* Tema escuro editorial: quase-preto, reguas finas de 1px e um ambar queimado
+   como unico acento. O peso visual vem de ESPACO e LINHA, nao de sombra e curva -
+   por isso nao ha raio de canto nem sombra colorida em lugar nenhum.
 
-  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+   No Tailwind v4 a configuracao mora aqui no CSS, e cada --color-* vira utilitario
+   (bg-canvas, text-ink, border-line...). Os nomes sao SEMANTICOS, nao literais:
+   "canvas" e o fundo, "ink" e o texto forte. Foi isso que permitiu inverter o tema
+   inteiro mexendo so nestes valores, sem tocar em nenhum componente. */
+@theme {
+  --color-canvas: #0c0c0e;   /* fundo principal */
+  --color-mist: #151517;     /* faixas e paineis, um degrau acima do fundo */
+  --color-line: #26262b;     /* bordas e reguas - o principal recurso de estrutura */
+  --color-ink: #f2f2f3;      /* titulos e texto forte */
+  --color-slate: #8b8b95;    /* texto de apoio (contraste 5.6:1 sobre canvas) */
+  --color-accent: #d4a05f;   /* ambar queimado: o unico ponto quente da paleta */
+  --color-accent-soft: #211a12;
+
+  /* Estados. Escolhidos na faixa 300/400 porque as versoes claras do Tailwind
+     (emerald-50, amber-50) sao feitas pra fundo branco e somem no escuro. */
+  --color-positive: #6ee7b7;
+  --color-warning: #fbbf24;
+  --color-danger: #fb7185;
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
   --animate-marquee: marquee 32s linear infinite;
 }
@@ -22,9 +33,9 @@
   to { transform: translateX(-50%); }
 }
 
-/* Reduz a base de 16px pra 15px: como o Tailwind usa rem, isso encolhe TODOS */
-/* os tamanhos (fonte, espacamento) de forma proporcional - a interface inteira */
-/* fica um pouco menor e mais respirada de uma vez so.                           */
+/* Reduz a base de 16px pra 15px: como o Tailwind usa rem, isso encolhe TODOS
+   os tamanhos (fonte, espacamento) de forma proporcional - a interface inteira
+   fica um pouco menor e mais respirada de uma vez so. */
 html {
   font-size: 15px;
 }
@@ -37,7 +48,95 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Titulos apertados: em corpo grande a Bricolage pede tracking negativo, senao as
+   palavras flutuam. O optical sizing dela ja ajusta o desenho por tamanho. */
 h1, h2, h3 {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+}
+
+/* Micro-rotulo editorial ("EM ALTA", "/01"). E a mesma fonte dos titulos em corpo
+   pequeno, maiuscula e com tracking bem aberto - resolve o ar de revista sem
+   carregar uma terceira familia. */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-slate);
+}
+
+/* Foco visivel em qualquer coisa navegavel por teclado. O ambar sobre quase-preto
+   e inconfundivel, e o offset impede que o anel encoste no proprio elemento. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* --- Movimento ---
+   Duas ideias so, aplicadas com disciplina: conteudo SOBE ao entrar em cena, e
+   a entrada da pagina acontece em cascata. Nada gira, pisca ou quica. */
+
+/* Elementos marcados com data-reveal comecam abaixo e transparentes; o
+   IntersectionObserver (ui/use-reveal.js) adiciona .is-revealed quando eles
+   entram na tela. O cubic-bezier desacelera no fim - a peca "assenta" em vez de
+   parar seco. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Cascata na abertura do hero: cada filho entra um pouco depois do anterior.
+   O atraso e curto de proposito - passa a sensacao de ordem, nao de espera. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.hero-stagger > * {
+  opacity: 0;
+  animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.hero-stagger > *:nth-child(2) { animation-delay: 0.15s; }
+.hero-stagger > *:nth-child(3) { animation-delay: 0.25s; }
+.hero-stagger > *:nth-child(4) { animation-delay: 0.35s; }
+
+/* A imagem de fundo do hero entra depois de tudo, e devagar: ela e atmosfera,
+   nao conteudo, entao nao deve competir com o titulo pela atencao inicial. */
+@keyframes ambient-in {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: var(--ambient-opacity, 1); transform: none; }
+}
+
+.ambient-in {
+  opacity: 0;
+  animation: ambient-in 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+
+/* Quem pediu menos movimento no sistema recebe menos movimento - e, mais
+   importante, continua vendo TODO o conteudo. Sem esta regra, quem desativa
+   animacao ficaria com os blocos [data-reveal] invisiveis pra sempre. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  [data-reveal],
+  .hero-stagger > *,
+  .ambient-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

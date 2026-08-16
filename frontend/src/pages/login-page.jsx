@@ -32,13 +32,13 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
           <input className={field} placeholder="Usuário" value={username} onChange={(e) => setUsername(e.target.value)} />
           <input className={field} type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} />
-          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+          {error && <p className="text-danger text-sm font-medium">{error}</p>}
           <button type="submit" className={`${btnPrimary} w-full`}>Entrar</button>
         </form>
         <p className="text-slate text-sm mt-5">
           Não tem conta? <Link to="/register" className="text-accent font-semibold">Criar uma</Link>
         </p>
-        <p className="text-sm text-slate mt-4 bg-mist border border-line rounded-xl px-4 py-2.5">
+        <p className="text-sm text-slate mt-4 bg-mist border border-line px-4 py-2.5">
           Conta de teste: <strong className="text-ink">demo</strong> / <strong className="text-ink">demo123</strong>
         </p>
       </div>

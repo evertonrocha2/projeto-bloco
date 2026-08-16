@@ -97,7 +97,7 @@ export default function RecommendationsPage() {
     return (
       <div className={wrap}>
         <div className={`${card} p-8 text-center max-w-lg mx-auto`}>
-          <span className="grid place-items-center h-12 w-12 rounded-xl bg-accent/10 text-accent mx-auto">
+          <span className="grid place-items-center h-12 w-12 bg-accent/10 text-accent mx-auto">
             <Sparkles size={22} />
           </span>
           <h1 className="font-display font-extrabold text-2xl text-ink mt-4">
@@ -116,31 +116,58 @@ export default function RecommendationsPage() {
   if (loading) return <div className={wrap}><Spinner /></div>
 
   return (
-    <div className={wrap}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="font-display font-extrabold text-3xl text-ink">Recomendados pra você</h1>
-            {/* Deixa visivel se os dados vieram de um calculo novo ou do lote salvo */}
-            {data && <ServiceStatusBadge stale={data.stale} />}
+    <>
+      {/* Cabecalho com o por do sol ao fundo, no mesmo tratamento do hero da
+          landing: imagem forte embaixo, dissolvendo pra cima. Esta e a tela do
+          microsservico - a que a entrega existe pra mostrar - entao ela ganha o
+          mesmo peso visual da abertura do site. */}
+      <section className="relative overflow-hidden border-b border-line">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: 'url(/background-2.jpg)',
+            filter: 'brightness(0.45) saturate(0.85)',
+            maskImage: 'linear-gradient(to top, #000 0%, #000 40%, transparent 92%)',
+            WebkitMaskImage: 'linear-gradient(to top, #000 0%, #000 40%, transparent 92%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-canvas/90 via-canvas/50 to-canvas"
+        />
+
+        <div className="max-w-6xl mx-auto px-6 relative py-20 sm:py-24">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="eyebrow">só pra você</p>
+                {/* Deixa visivel se os dados vieram de um calculo novo ou do lote salvo */}
+                {data && <ServiceStatusBadge stale={data.stale} />}
+              </div>
+              <h1 className="font-display font-extrabold text-4xl sm:text-5xl text-ink leading-[1.02] mt-4">
+                O que jogar depois
+              </h1>
+              <p className="text-slate mt-4 max-w-lg leading-relaxed">
+                Escolhas feitas a partir dos gêneros que você avalia bem — e dos que
+                você ignora. Quanto mais você registra, melhor fica.
+              </p>
+            </div>
+
+            <button onClick={handleRefresh} disabled={refreshing} className={`${btnGhost} !py-2.5 text-sm`}>
+              <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+              {refreshing ? 'Recalculando...' : 'Recalcular'}
+            </button>
           </div>
-          <p className="text-slate mt-1.5">
-            Escolhidos pelo microsserviço de recomendações a partir dos gêneros que você
-            costuma gostar.
-          </p>
         </div>
+      </section>
 
-        <button onClick={handleRefresh} disabled={refreshing} className={`${btnGhost} !py-2.5 text-sm`}>
-          <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
-          {refreshing ? 'Recalculando...' : 'Recalcular'}
-        </button>
-      </div>
-
-      {error && <p className="text-red-500 font-medium mt-6">{error}</p>}
+    <div className={wrap}>
+      {error && <p className="text-danger font-medium">{error}</p>}
 
       {data?.stale && (
-        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-          <p className="text-sm text-amber-800">
+        <div className="border border-warning/40 bg-mist px-5 py-4">
+          <p className="text-sm text-warning">
             <strong className="font-semibold">Modo degradado.</strong> O serviço de
             catálogo não respondeu, então estas indicações vêm do último cálculo salvo
             no banco do microsserviço. A tela continua funcionando — o que você vê pode
@@ -149,12 +176,13 @@ export default function RecommendationsPage() {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-[1fr_320px] gap-8 mt-8">
+      <div className="grid lg:grid-cols-[1fr_320px] gap-8">
         <div>
           {data?.items?.length === 0 ? (
             <div className={`${card} p-8`}>
-              <h2 className="font-display font-bold text-ink">Nada pra indicar agora</h2>
-              <p className="text-slate mt-2">
+              <p className="eyebrow">sem indicações</p>
+              <h2 className="font-display font-bold text-xl text-ink mt-2">Você zerou o catálogo</h2>
+              <p className="text-slate mt-2 leading-relaxed">
                 {data.stale
                   ? 'Não foi possível falar com o catálogo e não há um cálculo anterior salvo. Tente recalcular em instantes.'
                   : 'Você já conhece tudo o que está no catálogo, ou descartou o resto. Avalie mais jogos pra gente encontrar coisas novas.'}
@@ -186,5 +214,6 @@ export default function RecommendationsPage() {
         </aside>
       </div>
     </div>
+    </>
   )
 }

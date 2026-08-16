@@ -37,7 +37,7 @@ export default function RegisterPage() {
           <input name="email" type="email" className={field} placeholder="Email" value={form.email} onChange={update} />
           <input name="password" type="password" className={field} placeholder="Senha (mín. 6)" value={form.password} onChange={update} />
           <textarea name="bio" className={`${field} resize-y`} placeholder="Fala um pouco de você (opcional)" value={form.bio} onChange={update} rows={2} />
-          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+          {error && <p className="text-danger text-sm font-medium">{error}</p>}
           <button type="submit" className={`${btnPrimary} w-full`}>Criar conta</button>
         </form>
         <p className="text-slate text-sm mt-5">

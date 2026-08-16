@@ -1,4 +1,3 @@
-import { Wifi, WifiOff } from 'lucide-react'
 import { serviceStatus } from './recommendation-text.js'
 
 // Mostra se as recomendacoes vieram de um calculo novo ou do ultimo lote salvo.
@@ -8,23 +7,29 @@ import { serviceStatus } from './recommendation-text.js'
 // gravado no banco proprio - a tela continua funcionando, com aviso, em vez de
 // mostrar erro.
 //
-// E o componente que torna a demonstracao concreta: derruba-se o monolito, a
-// pagina continua listando jogos, e o selo muda de "ao vivo" pra "modo degradado".
+// O ponto luminoso a esquerda faz o trabalho que um icone faria, com menos ruido:
+// verde parado quando esta ao vivo, ambar pulsando quando esta degradado. E o
+// unico movimento da interface, e existe porque sinaliza algo que muda sozinho.
 export default function ServiceStatusBadge({ stale }) {
   const status = serviceStatus(stale)
-  const Icon = status.live ? Wifi : WifiOff
 
   return (
     <span
       title={status.detail}
       className={
-        'inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1 border ' +
+        'inline-flex items-center gap-2 text-[0.7rem] font-medium tracking-[0.14em] uppercase px-2.5 py-1 border ' +
         (status.live
-          ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-          : 'text-amber-700 bg-amber-50 border-amber-200')
+          ? 'text-positive border-line'
+          : 'text-warning border-warning/40')
       }
     >
-      <Icon size={13} />
+      <span
+        aria-hidden="true"
+        className={
+          'block h-1.5 w-1.5 rounded-full ' +
+          (status.live ? 'bg-positive' : 'bg-warning animate-pulse')
+        }
+      />
       {status.label}
     </span>
   )

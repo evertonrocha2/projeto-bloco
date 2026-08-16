@@ -13,8 +13,9 @@ export default function TasteProfileChart({ genres }) {
   if (!genres || genres.length === 0) {
     return (
       <div className={`${card} p-5`}>
-        <h2 className="font-display font-bold text-ink">Seu perfil de gosto</h2>
-        <p className="text-sm text-slate mt-2">
+        <p className="eyebrow">seu perfil</p>
+        <h2 className="font-display font-semibold text-ink mt-2">Ainda sem leitura</h2>
+        <p className="text-sm text-slate mt-2 leading-relaxed">
           Avalie alguns jogos pra gente entender o que você curte. Enquanto isso, as
           indicações vêm da nota da comunidade.
         </p>
@@ -28,23 +29,24 @@ export default function TasteProfileChart({ genres }) {
 
   return (
     <div className={`${card} p-5`}>
-      <h2 className="font-display font-bold text-ink">Seu perfil de gosto</h2>
-      <p className="text-sm text-slate mt-1 mb-4">
+      <p className="eyebrow">seu perfil</p>
+      <h2 className="font-display font-semibold text-ink mt-2">Gêneros que te definem</h2>
+      <p className="text-sm text-slate mt-1 mb-5 leading-relaxed">
         Calculado a partir das suas avaliações e da sua coleção.
       </p>
 
-      <ul className="space-y-2.5">
+      <ul className="flex flex-col">
         {principais.map(({ genre, weight }) => (
-          <li key={genre}>
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span className="font-semibold text-ink">{genre}</span>
+          <li key={genre} className="py-2.5 border-t border-line first:border-t-0">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="font-medium text-ink">{genre}</span>
               {/* Peso como porcentagem: 1.0 vira 100%, que le mais facil */}
-              <span className="text-slate">{Math.round(weight * 100)}%</span>
+              <span className="text-slate tabular-nums">{Math.round(weight * 100)}%</span>
             </div>
-            <div className="h-2 rounded-full bg-mist overflow-hidden">
+            <div className="h-px bg-line">
               <div
-                className="h-full rounded-full bg-accent transition-all duration-500"
-                style={{ width: `${Math.max(weight * 100, 3)}%` }}
+                className="h-px bg-accent transition-all duration-700"
+                style={{ width: `${Math.max(weight * 100, 4)}%` }}
               />
             </div>
           </li>

@@ -5,6 +5,7 @@ import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
 import { parseGenres } from '@/lib/genres.js'
 import StarRating from '@/ui/star-rating.jsx'
+import GameCover from '@/ui/game-cover.jsx'
 import Spinner from '@/ui/spinner.jsx'
 import { btnPrimary, btnGhost, field, card } from '@/lib/ui.js'
 
@@ -69,7 +70,7 @@ export default function GameDetailPage() {
     }
   }
 
-  if (error) return <div className={wrap}><p className="text-red-500 font-medium">{error}</p></div>
+  if (error) return <div className={wrap}><p className="text-danger font-medium">{error}</p></div>
   if (!game) return <div className={wrap}><Spinner /></div>
 
   const genres = parseGenres(game.genre)
@@ -82,7 +83,7 @@ export default function GameDetailPage() {
 
       {/* cabecalho */}
       <header className="grid md:grid-cols-[300px_1fr] gap-8 items-start">
-        <img src={game.coverUrl} alt={game.title} className="w-full aspect-video md:aspect-[3/4] object-cover rounded-2xl border border-line" />
+        <GameCover game={game} className="aspect-video md:aspect-[3/4] border border-line" />
         <div>
           <h1 className="font-display font-extrabold text-4xl text-ink leading-tight">{game.title}</h1>
           <p className="text-slate mt-1">{game.releaseYear || 's/ data'}</p>
@@ -94,7 +95,7 @@ export default function GameDetailPage() {
           </div>
           <div className="flex flex-wrap gap-2 mt-4">
             {genres.map((genre) => (
-              <span key={genre} className="text-xs font-semibold text-slate bg-mist border border-line rounded-full px-3 py-1">{genre}</span>
+              <span key={genre} className="text-xs font-semibold text-slate bg-mist border border-line px-3 py-1">{genre}</span>
             ))}
           </div>
           {game.description && <p className="text-slate leading-relaxed mt-5">{game.description}</p>}
@@ -118,7 +119,7 @@ export default function GameDetailPage() {
             {collDone ? <Check size={18} /> : <Plus size={18} />}
             {collDone ? 'Atualizar coleção' : 'Adicionar à coleção'}
           </button>
-          {collMsg && <span className="text-sm font-medium text-green-600">{collMsg}</span>}
+          {collMsg && <span className="text-sm font-medium text-positive">{collMsg}</span>}
         </form>
       )}
 
@@ -138,7 +139,7 @@ export default function GameDetailPage() {
             rows={3}
             className={`${field} resize-y`}
           />
-          {formError && <p className="text-red-500 text-sm font-medium">{formError}</p>}
+          {formError && <p className="text-danger text-sm font-medium">{formError}</p>}
           <button type="submit" className={btnPrimary} disabled={submitting}>
             {submitting ? 'Enviando...' : 'Publicar avaliação'}
           </button>

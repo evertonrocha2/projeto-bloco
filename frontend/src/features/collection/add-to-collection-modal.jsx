@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { X, Search, Check } from 'lucide-react'
 import { api } from '@/lib/api'
 import { btnPrimary, field } from '@/lib/ui.js'
+import GameCover from '@/ui/game-cover.jsx'
 
 const STATUS_OPTIONS = ['Quero jogar', 'Jogando', 'Zerado', 'Largado']
 
@@ -45,9 +46,9 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
 
   return (
     // fundo escurecido; clicar fora fecha
-    <div className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-canvas/85 flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-canvas border border-line rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden"
+        className="bg-canvas border border-line w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-line">
@@ -61,7 +62,7 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate/60" />
             <input
               autoFocus
-              className="w-full bg-canvas border border-line rounded-lg pl-9 pr-3 py-2 text-sm text-ink outline-none focus:border-accent focus:ring-4 focus:ring-accent/10"
+              className="w-full bg-canvas border border-line pl-9 pr-3 py-2 text-sm text-ink outline-none focus:border-accent focus:ring-4 focus:ring-accent/10"
               placeholder="Buscar jogo pelo nome..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -79,11 +80,11 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
                 key={game.id}
                 onClick={() => setSelected(game)}
                 className={
-                  'w-full flex items-center gap-3 p-2 rounded-lg text-left transition cursor-pointer ' +
+                  'w-full flex items-center gap-3 p-2 text-left transition cursor-pointer ' +
                   (active ? 'bg-accent-soft' : 'hover:bg-mist')
                 }
               >
-                <img src={game.coverUrl} alt="" className="h-10 w-16 object-cover rounded border border-line shrink-0" />
+                <GameCover game={game} className="h-10 w-16 border border-line shrink-0" />
                 <span className="flex-1 min-w-0">
                   <span className="block text-sm font-semibold text-ink truncate">{game.title}</span>
                   <span className="block text-xs text-slate truncate">{game.genre}</span>
@@ -110,7 +111,7 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
             <button onClick={handleAdd} disabled={saving} className={`${btnPrimary} !py-2.5`}>
               {saving ? 'Adicionando...' : 'Adicionar'}
             </button>
-            {error && <p className="text-red-500 text-sm font-medium w-full">{error}</p>}
+            {error && <p className="text-danger text-sm font-medium w-full">{error}</p>}
           </div>
         )}
       </div>

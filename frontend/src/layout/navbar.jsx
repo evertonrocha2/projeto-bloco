@@ -13,27 +13,36 @@ export default function Navbar() {
     navigate('/')
   }
 
+  // O item ativo fica ambar com um traco embaixo. Marcar a pagina atual so com
+  // "texto mais claro" e fraco num tema escuro, onde a diferenca entre cinza e
+  // branco se perde; a cor quente e o traco resolvem de longe.
   const link = ({ isActive }) =>
-    'text-sm font-semibold transition ' + (isActive ? 'text-ink' : 'text-slate hover:text-ink')
+    'relative text-sm font-medium transition-colors py-1 ' +
+    (isActive
+      ? 'text-accent after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:bg-accent'
+      : 'text-slate hover:text-ink')
 
   return (
-    <nav className="sticky top-0 z-30 bg-canvas/85 backdrop-blur border-b border-line">
+    <nav className="sticky top-0 z-30 bg-canvas/80 backdrop-blur-md border-b border-line">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-display font-extrabold text-xl text-ink">
-          <span className="grid place-items-center h-8 w-8 rounded-lg bg-ink text-white">
+        <Link
+          to="/"
+          className="group flex items-center gap-2.5 font-display font-extrabold text-xl text-ink tracking-tight"
+        >
+          <span className="grid place-items-center h-8 w-8 bg-accent text-canvas transition-transform duration-300 group-hover:rotate-[-8deg]">
             <Gamepad2 size={18} />
           </span>
           GameLog
         </Link>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-7">
           <NavLink to="/games" className={link}>Catálogo</NavLink>
           {isAuthenticated ? (
             <>
               {/* So pra quem esta logado: recomendacao depende de saber quem e a pessoa */}
               <NavLink to="/recommendations" className={link}>Recomendados</NavLink>
               <NavLink to={`/users/${username}`} className={link}>{username}</NavLink>
-              <button onClick={handleLogout} className="text-sm font-semibold text-slate hover:text-ink transition cursor-pointer">
+              <button onClick={handleLogout} className="text-sm font-medium text-slate hover:text-ink transition-colors cursor-pointer">
                 Sair
               </button>
             </>

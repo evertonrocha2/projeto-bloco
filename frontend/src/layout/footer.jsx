@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2 font-display font-extrabold text-xl text-ink">
-            <span className="grid place-items-center h-8 w-8 rounded-lg bg-ink text-white">
+            <span className="grid place-items-center h-8 w-8 bg-accent text-canvas">
               <Gamepad2 size={18} />
             </span>
             GameLog
