@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- POM pai (agregador) do Projeto de Bloco.
-         Ate o TP2 existia um projeto Maven so (o monolito em backend/). No TP3 o
+         Ate o TP2 existia um projeto Maven so (o monolito). No TP3 o
          sistema passou a ter cinco aplicacoes Spring Boot, entao a gente promoveu
          a raiz a projeto multi-modulo. Ganhos concretos:
            - "mvn test" na raiz roda os testes de TODOS os servicos de uma vez;
@@ -36,19 +36,25 @@
         <spring-cloud.version>2023.0.3</spring-cloud.version>
     </properties>
 
+    <!-- A estrutura de pastas separa APLICACOES de INFRAESTRUTURA.
+         services/ guarda o que tem regra de negocio; platform/ guarda o
+         encanamento que faz esses servicos se acharem e conversarem.
+
+         O monolito mora em services/gamelog junto com o microsservico, e nao
+         numa pasta "backend" a parte, porque ele TAMBEM e um servico: registra-se
+         no Eureka, busca configuracao no Config Server e e alcancado por
+         lb://gamelog igual ao outro. Uma pasta chamada "backend" ao lado de
+         "services" sugeriria que ele e outra categoria de coisa, o que nao e
+         verdade desde o TP3. -->
     <modules>
-        <!-- O monolito modular do TP1/TP2. Continua em backend/ de proposito:
-             os caminhos do banco (./data/gamelog) e as instrucoes do README
-             seguem valendo exatamente como antes. -->
-        <module>backend</module>
+        <!-- Aplicacoes de negocio -->
+        <module>services/gamelog</module>
+        <module>services/recommendation-service</module>
 
         <!-- Infraestrutura Spring Cloud -->
-        <module>services/config-server</module>
-        <module>services/discovery-server</module>
-        <module>services/api-gateway</module>
-
-        <!-- O microsservico desta entrega -->
-        <module>services/recommendation-service</module>
+        <module>platform/config-server</module>
+        <module>platform/discovery-server</module>
+        <module>platform/api-gateway</module>
     </modules>
 
     <dependencyManagement>

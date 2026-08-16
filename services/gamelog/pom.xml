@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Antes este modulo herdava direto do spring-boot-starter-parent. No TP3 ele
-         passou a herdar do POM pai do projeto (../pom.xml), que por sua vez herda
-         do starter-parent. O motivo: com cinco aplicacoes Spring Boot no
+         passou a herdar do POM pai do projeto, que por sua vez herda do
+         starter-parent. O motivo: com cinco aplicacoes Spring Boot no
          repositorio, a versao do Boot e do Spring Cloud precisa estar declarada
          num lugar unico - servicos que conversam entre si com versoes diferentes
          de biblioteca e um problema chato de achar. -->
@@ -14,7 +14,7 @@
         <groupId>com.gamelog</groupId>
         <artifactId>projeto-bloco</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>gamelog</artifactId>

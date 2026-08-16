@@ -1,12 +1,12 @@
 # Java / Maven
-# Vale pra qualquer modulo: o monolito em backend/ e os servicos em services/.
+# Vale pra qualquer modulo: os servicos em services/ e a infra em platform/.
 target/
 *.class
 
 # Bancos H2 em arquivo (dados locais, nao vao pro repositorio).
 # Sao DOIS bancos separados - um por servico - e essa separacao e o ponto:
 # o microsservico nao compartilha tabela com o monolito.
-backend/data/
+services/gamelog/data/
 services/recommendation-service/data/
 
 # PDFs (entregas e documentos nao vao pro repositorio)

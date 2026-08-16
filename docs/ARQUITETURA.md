@@ -50,7 +50,7 @@ modular**, ou seja, um único processo dividido em **módulos por funcionalidade
 (subdomínio)**, e dentro de cada módulo o código é organizado em **camadas**.
 
 ```
-backend/src/main/java/com/gamelog/
+services/gamelog/src/main/java/com/gamelog/
 ├── identity/     ← módulo (usuários, login, perfil)
 │   ├── domain/        ← entidades
 │   ├── repository/    ← acesso a dados

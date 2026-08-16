@@ -76,7 +76,7 @@ flowchart TB
 ### Uma decisão que atravessa tudo: degradação graciosa
 
 Todo serviço importa configuração com `optional:configserver:` e tolera o Eureka
-ausente. A razão é concreta: `cd backend && mvn spring-boot:run` precisa continuar
+ausente. A razão é concreta: `cd services/gamelog && mvn spring-boot:run` precisa continuar
 funcionando exatamente como o README sempre documentou. A stack distribuída é um
 **acréscimo**, não um pré-requisito — e isso também evita a armadilha clássica em
 que a ordem de inicialização derruba tudo em cascata.
@@ -215,7 +215,7 @@ incluir gênero afetaria o front e os testes que já dependem do formato dele; u
 consumidor novo com necessidade diferente ganha um endpoint próprio.
 
 ```
-backend/src/main/java/com/gamelog/integration/
+services/gamelog/src/main/java/com/gamelog/integration/
 ├── controller/GameActivityController.java
 ├── service/GameActivityService.java
 └── dto/GameActivityResponse.java
@@ -732,11 +732,11 @@ degradado".
 Um terminal por serviço, nesta ordem:
 
 ```bash
-cd services/config-server          && mvn spring-boot:run   # 8888
-cd services/discovery-server       && mvn spring-boot:run   # 8761
-cd backend                         && mvn spring-boot:run   # 8080
+cd platform/config-server          && mvn spring-boot:run   # 8888
+cd platform/discovery-server       && mvn spring-boot:run   # 8761
+cd services/gamelog                         && mvn spring-boot:run   # 8080
 cd services/recommendation-service && mvn spring-boot:run   # 8081
-cd services/api-gateway            && mvn spring-boot:run   # 8090
+cd platform/api-gateway            && mvn spring-boot:run   # 8090
 
 # front-end, em outro terminal
 cd frontend && npm run dev
@@ -765,7 +765,7 @@ consegue rotear depois disso.
 Usuário de demonstração: **demo / demo123**
 
 > Se o catálogo já existir de uma execução anterior, o seeder não faz nada (é
-> idempotente). Para começar do zero, apague `backend/data/` e
+> idempotente). Para começar do zero, apague `services/gamelog/data/` e
 > `services/recommendation-service/data/`.
 
 ### Roteiro de demonstração

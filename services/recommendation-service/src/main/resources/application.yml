@@ -13,7 +13,7 @@ spring:
     import: optional:configserver:http://localhost:8888
 
   # === BANCO PROPRIO ===
-  # Arquivo separado do banco do monolito (que fica em backend/data/gamelog).
+  # Arquivo separado do banco do monolito (que fica em services/gamelog/data).
   # Nao e detalhe de configuracao, e a fronteira do microsservico: as tabelas
   # daqui (recommendations, recommendation_feedback) nao existem no monolito, e as
   # tabelas dele (users, games, reviews) nao existem aqui. A unica ligacao entre

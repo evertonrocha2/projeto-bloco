@@ -52,11 +52,11 @@ diretório atual.
 Abra um terminal por serviço, nesta ordem:
 
 ```bash
-cd services/config-server          && mvn spring-boot:run   # 8888
-cd services/discovery-server       && mvn spring-boot:run   # 8761
-cd backend                         && mvn spring-boot:run   # 8080
+cd platform/config-server          && mvn spring-boot:run   # 8888
+cd platform/discovery-server       && mvn spring-boot:run   # 8761
+cd services/gamelog                         && mvn spring-boot:run   # 8080
 cd services/recommendation-service && mvn spring-boot:run   # 8081
-cd services/api-gateway            && mvn spring-boot:run   # 8090
+cd platform/api-gateway            && mvn spring-boot:run   # 8090
 ```
 
 A ordem segue a árvore de dependências: os serviços pedem configuração ao Config
@@ -97,7 +97,7 @@ Continua funcionando, exatamente como no TP1/TP2 — a stack distribuída é um
 acréscimo, não um pré-requisito:
 
 ```bash
-cd backend
+cd services/gamelog
 mvn spring-boot:run
 ```
 
@@ -119,11 +119,11 @@ serviço com banco cria `./data` relativo ao diretório atual.
 
 | Serviço | Pasta |
 |---------|-------|
-| Config Server | `services/config-server` |
-| Eureka | `services/discovery-server` |
-| Monólito | `backend` |
+| Config Server | `platform/config-server` |
+| Eureka | `platform/discovery-server` |
+| Monólito | `services/gamelog` |
 | Recomendações | `services/recommendation-service` |
-| API Gateway | `services/api-gateway` |
+| API Gateway | `platform/api-gateway` |
 
 ### Endereços úteis
 
@@ -141,7 +141,7 @@ jogos, então a aplicação nunca abre sem catálogo — e as recomendações t�
 candidatos suficientes pra funcionar mesmo sem chave de API.
 
 > Para recomeçar do zero (o seeder é idempotente e não faz nada se já houver
-> dados), apague `backend/data/` e `services/recommendation-service/data/`.
+> dados), apague `services/gamelog/data/` e `services/recommendation-service/data/`.
 
 ### Usuário de demonstração
 
@@ -172,22 +172,33 @@ candidatos suficientes pra funcionar mesmo sem chave de API.
 
 ## Estrutura do projeto
 
+A estrutura separa **aplicações** de **infraestrutura**: `services/` guarda o que
+tem regra de negócio, `platform/` guarda o encanamento que faz esses serviços se
+acharem e conversarem.
+
 ```
 projeto-bloco/
 ├── pom.xml                            → POM pai (projeto multi-módulo)
-├── backend/                           → Monólito GameLog (Spring Boot)
-│   └── data/                          → banco H2 do monólito
-├── services/
-│   ├── config-server/                 → Spring Cloud Config (8888)
-│   ├── discovery-server/              → Eureka (8761)
-│   ├── api-gateway/                   → Spring Cloud Gateway (8090)
+├── services/                          → APLICAÇÕES DE NEGÓCIO
+│   ├── gamelog/                       → Monólito GameLog (8080)
+│   │   └── data/                      → banco H2 do monólito
 │   └── recommendation-service/        → MICROSSERVIÇO (8081)
 │       └── data/                      → banco H2 PRÓPRIO, separado
+├── platform/                          → INFRAESTRUTURA SPRING CLOUD
+│   ├── config-server/                 → Spring Cloud Config (8888)
+│   ├── discovery-server/              → Eureka (8761)
+│   └── api-gateway/                   → Spring Cloud Gateway (8090)
 ├── config-repo/                       → .yml servidos pelo Config Server
 ├── frontend/                          → Interface (React)
 ├── docs/                              → Documentação
 └── README.md
 ```
+
+O monólito fica em `services/gamelog`, junto do microsserviço, e não numa pasta
+`backend` à parte, porque **ele também é um serviço**: registra-se no Eureka, busca
+configuração no Config Server e é alcançado por `lb://gamelog` igual ao outro. Uma
+pasta chamada "backend" ao lado de "services" sugeriria que ele é outra categoria
+de coisa — o que deixou de ser verdade no TP3.
 
 - Arquitetura do monólito (componentes, camadas e sequência):
   [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md)
@@ -255,22 +266,22 @@ E o front-end:
 
 ```bash
 cd frontend
-npm test          # 6 testes
+npm test          # 15 testes
 ```
 
 | Módulo | Testes | O que cobre |
 |--------|-------:|-------------|
-| `backend` (monólito) | 30 | persistência do TP2 (21) + projeções JPQL novas + endpoint `game-activity` |
+| `services/gamelog` (monólito) | 30 | persistência do TP2 (21) + projeções JPQL novas + endpoint `game-activity` |
 | `services/recommendation-service` | 44 | perfil de gosto, algoritmo, repositórios, serviço, tradução de payload, contrato HTTP |
-| `services/api-gateway` | 8 | roteamento e ordem das rotas, filtro de autenticação, dedupe de CORS |
-| `services/config-server` | 2 | serve de fato as propriedades do `config-repo` |
-| `services/discovery-server` | 2 | o registro responde e não se registra em si mesmo |
+| `platform/api-gateway` | 8 | roteamento e ordem das rotas, filtro de autenticação, dedupe de CORS |
+| `platform/config-server` | 2 | serve de fato as propriedades do `config-repo` |
+| `platform/discovery-server` | 2 | o registro responde e não se registra em si mesmo |
 | `frontend` | 15 | textos da tela de recomendações e leitura dos gêneros do catálogo |
 
 ### Testes da camada de persistência (TP2)
 
 ```bash
-cd backend
+cd services/gamelog
 mvn test
 ```
 
@@ -306,7 +317,7 @@ Se a 8080 estiver ocupada, suba assim — **evite a 8081, 8090, 8761 e 8888**, q
 são dos outros serviços:
 
 ```bash
-cd backend
+cd services/gamelog
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8082
 ```
 

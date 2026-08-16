@@ -9,7 +9,7 @@ Nesta etapa a persistência virou "de verdade":
 
 | | TP1 | TP2 |
 |---|-----|-----|
-| Banco | H2 em memória | H2 **em arquivo** (`backend/data/`), dados sobrevivem ao restart |
+| Banco | H2 em memória | H2 **em arquivo** (`services/gamelog/data/`), dados sobrevivem ao restart |
 | Datas de criação/alteração | setadas na mão com `Instant.now()` | automáticas (`@CreatedDate` / `@LastModifiedDate`) |
 | Histórico de mudanças | não existia | Hibernate Envers + `RevisionRepository` |
 | Média de notas do catálogo | calculada em memória, jogo a jogo (N+1) | agregada no banco em 1 consulta (`AVG`/`COUNT` + `GROUP BY`) |
@@ -335,7 +335,7 @@ Pra alimentar o histórico, a API de reviews ganhou edição e exclusão:
 
 ## 6. Testes automatizados
 
-Rodar: `cd backend && mvn test` — **21 testes** cobrindo a camada de
+Rodar: `cd services/gamelog && mvn test` — **21 testes** cobrindo a camada de
 persistência, todos com `@DataJpaTest` (sobe só a fatia JPA com um H2 em
 memória zerado, sem web e sem seeder).
 
