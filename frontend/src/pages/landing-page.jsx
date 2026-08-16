@@ -187,6 +187,85 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ==================== COMO FUNCIONA ====================
+          Numeracao aqui carrega informacao de verdade: e uma sequencia, e a
+          ordem importa (nao da pra receber indicacao antes de registrar algo).
+          Fora de um caso assim, numerar secao e so enfeite. */}
+      <section className={`${wrap} py-24`}>
+        <div className="max-w-2xl" data-reveal>
+          <p className="eyebrow">como funciona</p>
+          <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
+            Três passos e pronto.
+          </h2>
+        </div>
+
+        <ol className="grid md:grid-cols-3 mt-14 border-t border-l border-line" data-reveal-group>
+          {[
+            ['Registre', 'Marque os jogos que você já jogou e dê uma nota. Cinco minutos cobrem os últimos anos.'],
+            ['Avalie', 'Escreva o que achou. É o que transforma a lista num histórico que serve pra alguma coisa.'],
+            ['Descubra', 'A partir daí o sistema aprende seu gosto e passa a indicar o que você ainda não jogou.'],
+          ].map(([titulo, texto], indice) => (
+            <li key={titulo} className="p-8 border-r border-b border-line">
+              <span className="font-display font-bold text-5xl text-accent/25 tabular-nums leading-none">
+                {String(indice + 1).padStart(2, '0')}
+              </span>
+              <h3 className="font-display font-bold text-xl text-ink mt-5">{titulo}</h3>
+              <p className="text-slate text-sm mt-2 leading-relaxed">{texto}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* ==================== COMO A INDICAÇÃO É CALCULADA ====================
+          Serviço de recomendação costuma ser caixa preta. Aqui a conta aparece
+          inteira, com os pesos reais - é a diferença entre "confie no algoritmo"
+          e "olhe o algoritmo". */}
+      <section className="bg-mist border-y border-line">
+        <div className={`${wrap} py-24`}>
+          <div className="grid lg:grid-cols-[1fr_1.2fr] gap-14">
+            <div data-reveal>
+              <p className="eyebrow">sem caixa preta</p>
+              <h2 className="font-display font-bold text-4xl text-ink leading-[1.05] mt-4">
+                Você vê a conta.
+              </h2>
+              <p className="text-slate mt-5 leading-relaxed">
+                Nada de "o algoritmo escolheu". Cada indicação vem com o gênero que a
+                justificou, e a pontuação sai de uma fórmula que cabe numa linha —
+                a mesma para todo mundo.
+              </p>
+              <Link to="/recommendations" className={`${btnGhost} mt-8`}>
+                Ver minhas indicações <ArrowRight size={18} />
+              </Link>
+            </div>
+
+            <div data-reveal>
+              {/* A formula, escrita como a interface a executa */}
+              <div className="border border-line bg-canvas p-6 sm:p-8">
+                <p className="eyebrow">a pontuação</p>
+                <p className="font-display text-lg sm:text-xl text-ink mt-4 leading-relaxed">
+                  <span className="text-accent">afinidade de gênero</span> × 3
+                  <span className="text-slate"> + </span>
+                  <span className="text-accent">nota da comunidade</span> × 2
+                </p>
+
+                <ul className="mt-7 flex flex-col">
+                  {[
+                    ['Afinidade', 'Sai dos gêneros que você avaliou bem. Nota 5 pesa mais que nota 4, e jogo só na coleção pesa menos que jogo elogiado.'],
+                    ['Comunidade', 'A média de quem já avaliou. É o que decide entre dois jogos igualmente parecidos com o seu gosto.'],
+                    ['Fora da conta', 'O que você já avaliou, já tem na coleção ou marcou como "não me interessa" nunca aparece.'],
+                  ].map(([termo, texto]) => (
+                    <li key={termo} className="py-4 border-t border-line">
+                      <p className="eyebrow">{termo}</p>
+                      <p className="text-sm text-slate mt-1.5 leading-relaxed">{texto}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ==================== O QUE DÁ PRA FAZER ==================== */}
       <section className="bg-mist border-y border-line">
         <div className={`${wrap} py-24`}>

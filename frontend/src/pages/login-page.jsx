@@ -49,7 +49,6 @@ export default function LoginPage() {
           <span className="eyebrow">usuário</span>
           <input
             className={fieldLarge}
-            placeholder="seu nome de usuário"
             autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -61,7 +60,6 @@ export default function LoginPage() {
           <input
             className={fieldLarge}
             type="password"
-            placeholder="••••••••"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

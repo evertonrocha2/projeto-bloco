@@ -54,7 +54,6 @@ export default function RegisterPage() {
             <span className="eyebrow">usuário</span>
             <input
               className={fieldLarge}
-              placeholder="como você quer ser chamado"
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -66,7 +65,6 @@ export default function RegisterPage() {
             <input
               className={fieldLarge}
               type="email"
-              placeholder="voce@email.com"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -79,7 +77,6 @@ export default function RegisterPage() {
           <input
             className={fieldLarge}
             type="password"
-            placeholder="mínimo 6 caracteres"
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -89,8 +86,7 @@ export default function RegisterPage() {
         <label className="flex flex-col gap-2">
           <span className="eyebrow">sobre você · opcional</span>
           <textarea
-            className={`${fieldLarge} resize-y min-h-24`}
-            placeholder="que tipo de jogo te ganha?"
+            className={`${fieldLarge} resize-y min-h-20`}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
           />

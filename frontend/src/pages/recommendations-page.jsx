@@ -193,7 +193,7 @@ export default function RecommendationsPage() {
               <Link to="/games" className={`${btnGhost} mt-5 !py-2.5 text-sm`}>Ver catálogo</Link>
             </div>
           ) : (
-            <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]" data-reveal-group>
+            <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(150px,1fr))]" data-reveal-group>
               {data?.items?.map((item) => (
                 <RecommendationCard
                   key={item.gameId}

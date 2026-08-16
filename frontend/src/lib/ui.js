@@ -33,10 +33,10 @@ export const tag =
   'inline-flex items-center text-[0.7rem] font-medium tracking-wide ' +
   'px-2.5 py-1 bg-canvas/85 text-ink border border-line backdrop-blur'
 
-// campo grande, para as telas de acesso. Alvo de toque maior e texto em corpo
-// normal: num formulario que e a unica coisa da tela, campo miudo parece
-// descuido - e piora pra quem tem dificuldade motora ou visual.
+// campo das telas de acesso. Sem placeholder: o rotulo acima ja diz o que vai
+// ali, e texto cinza dentro do campo compete com o valor digitado - alem de
+// sumir assim que a pessoa comeca a escrever, justo quando ela poderia precisar
+// conferir o que o campo pedia.
 export const fieldLarge =
-  'w-full bg-canvas/60 border border-line px-4 py-3.5 text-base text-ink ' +
-  'outline-none transition-colors placeholder:text-slate/50 ' +
-  'focus:border-accent focus:bg-canvas'
+  'w-full bg-canvas/50 border border-line px-4 py-2.5 text-base text-ink ' +
+  'outline-none transition-colors focus:border-accent focus:bg-canvas/80'
