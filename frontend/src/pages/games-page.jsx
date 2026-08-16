@@ -7,6 +7,7 @@ import { collectGenres, parseGenres } from '@/lib/genres.js'
 import GameCard from '@/features/catalog/game-card.jsx'
 import Spinner from '@/ui/spinner.jsx'
 import AddToCollectionModal from '@/features/collection/add-to-collection-modal.jsx'
+import { useReveal } from '@/ui/use-reveal.js'
 import { btnPrimary } from '@/lib/ui.js'
 
 const wrap = 'max-w-6xl mx-auto px-6 py-12'
@@ -55,6 +56,10 @@ export default function GamesPage() {
     activeGenre === 'Todos' || parseGenres(game.genre).includes(activeGenre)
 
   const filtered = games.filter((game) => matchesSearch(game) && matchesGenre(game))
+
+  // Reobserva quando a lista muda: filtrar troca os cards, e os novos precisam
+  // entrar animados igual aos primeiros.
+  useReveal([filtered.length, activeGenre])
 
   if (loading) return <div className={wrap}><Spinner /></div>
   if (error) return <div className={wrap}><p className="text-danger font-medium">{error}</p></div>
@@ -112,7 +117,7 @@ export default function GamesPage() {
       {filtered.length === 0 ? (
         <p className="text-slate">Nenhum jogo encontrado com esse filtro.</p>
       ) : (
-        <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
+        <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]" data-reveal-group>
           {filtered.map((game) => (
             <GameCard key={game.id} game={game} onQuickAdd={isAuthenticated ? openAdd : undefined} />
           ))}

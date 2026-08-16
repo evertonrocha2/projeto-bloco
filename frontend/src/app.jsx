@@ -1,12 +1,12 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from '@/layout/navbar.jsx'
 import Footer from '@/layout/footer.jsx'
+import ScrollProgress from '@/ui/scroll-progress.jsx'
 import LandingPage from '@/pages/landing-page.jsx'
 import GamesPage from '@/pages/games-page.jsx'
 import GameDetailPage from '@/pages/game-detail-page.jsx'
 import ProfilePage from '@/pages/profile-page.jsx'
 import RecommendationsPage from '@/pages/recommendations-page.jsx'
-import GalleryPage from '@/pages/gallery-page.jsx'
 import LoginPage from '@/pages/login-page.jsx'
 import RegisterPage from '@/pages/register-page.jsx'
 
@@ -23,14 +23,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {!telaDeAcesso && <ScrollProgress />}
       {!telaDeAcesso && <Navbar />}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/games/:id" element={<GameDetailPage />} />
-          {/* Vitrine visual do catalogo: so a arte, sem nota nem texto */}
-          <Route path="/galeria" element={<GalleryPage />} />
           {/* Tela servida pelo microsservico de recomendacoes (via gateway) */}
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/users/:username" element={<ProfilePage />} />

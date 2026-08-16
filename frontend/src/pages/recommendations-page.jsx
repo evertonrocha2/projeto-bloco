@@ -7,6 +7,7 @@ import RecommendationCard from '@/features/recommendations/recommendation-card.j
 import TasteProfileChart from '@/features/recommendations/taste-profile-chart.jsx'
 import ServiceStatusBadge from '@/features/recommendations/service-status-badge.jsx'
 import Spinner from '@/ui/spinner.jsx'
+import { useReveal } from '@/ui/use-reveal.js'
 import { btnPrimary, btnGhost, card } from '@/lib/ui.js'
 
 const wrap = 'max-w-6xl mx-auto px-6 py-12'
@@ -51,6 +52,8 @@ export default function RecommendationsPage() {
   useEffect(() => {
     load()
   }, [load])
+
+  useReveal([data?.items?.length, loading])
 
   async function handleRefresh() {
     setRefreshing(true)
@@ -190,7 +193,7 @@ export default function RecommendationsPage() {
               <Link to="/games" className={`${btnGhost} mt-5 !py-2.5 text-sm`}>Ver catálogo</Link>
             </div>
           ) : (
-            <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
+            <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]" data-reveal-group>
               {data?.items?.map((item) => (
                 <RecommendationCard
                   key={item.gameId}

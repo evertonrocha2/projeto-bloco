@@ -84,15 +84,58 @@ h1, h2, h3 {
    parar seco. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(32px);
   transition:
-    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-reveal].is-revealed {
   opacity: 1;
   transform: none;
+}
+
+/* Grades revelam item a item, em cascata.
+   O atraso e por posicao (nth-child), entao vale pra qualquer grade sem o
+   componente precisar calcular indice nem receber style inline. Para no 12o
+   item: alem disso a espera acumulada passaria de meio segundo e a ultima peca
+   pareceria travada. */
+[data-reveal-group] > * {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-reveal-group].is-revealed > * {
+  opacity: 1;
+  transform: none;
+}
+
+[data-reveal-group].is-revealed > *:nth-child(1)  { transition-delay: 0.00s; }
+[data-reveal-group].is-revealed > *:nth-child(2)  { transition-delay: 0.05s; }
+[data-reveal-group].is-revealed > *:nth-child(3)  { transition-delay: 0.10s; }
+[data-reveal-group].is-revealed > *:nth-child(4)  { transition-delay: 0.15s; }
+[data-reveal-group].is-revealed > *:nth-child(5)  { transition-delay: 0.20s; }
+[data-reveal-group].is-revealed > *:nth-child(6)  { transition-delay: 0.25s; }
+[data-reveal-group].is-revealed > *:nth-child(7)  { transition-delay: 0.30s; }
+[data-reveal-group].is-revealed > *:nth-child(8)  { transition-delay: 0.35s; }
+[data-reveal-group].is-revealed > *:nth-child(n+9) { transition-delay: 0.40s; }
+
+/* Barra de progresso da rolagem, no topo. Anima por transform (scaleX), que o
+   navegador resolve na GPU - animar "width" forcaria recalculo de layout a cada
+   quadro. */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform-origin: 0 50%;
+  background: var(--color-accent);
+  z-index: 50;
+  will-change: transform;
 }
 
 /* Cascata na abertura do hero: cada filho entra um pouco depois do anterior.
@@ -134,6 +177,7 @@ h1, h2, h3 {
   }
 
   [data-reveal],
+  [data-reveal-group] > *,
   .hero-stagger > *,
   .ambient-in {
     opacity: 1 !important;

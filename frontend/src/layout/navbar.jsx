@@ -37,7 +37,6 @@ export default function Navbar() {
 
         <div className="flex items-center gap-7">
           <NavLink to="/games" className={link}>Catálogo</NavLink>
-          <NavLink to="/galeria" className={link}>Galeria</NavLink>
           {isAuthenticated ? (
             <>
               {/* So pra quem esta logado: recomendacao depende de saber quem e a pessoa */}

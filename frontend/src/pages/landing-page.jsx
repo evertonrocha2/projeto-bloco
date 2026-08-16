@@ -138,7 +138,7 @@ export default function LandingPage() {
                 ver todos
               </Link>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-6 border-t border-l border-line">
+            <div className="grid grid-cols-3 sm:grid-cols-6 border-t border-l border-line" data-reveal-group>
               {heroCovers.map((game) => (
                 <Link
                   key={game.id}
@@ -168,7 +168,7 @@ export default function LandingPage() {
           padding solto, então cada célula tinha uma quantidade diferente de ar em
           volta e o conjunto parecia torto. */}
       <section className={`${wrap} py-16`}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 border-y border-line" data-reveal>
+        <div className="grid grid-cols-1 sm:grid-cols-3 border-y border-line" data-reveal-group>
           {[
             [games.length, 'jogos no catálogo'],
             [totalReviews, 'avaliações publicadas'],
@@ -200,7 +200,7 @@ export default function LandingPage() {
               É um diário de jogos — e a lista abaixo é tudo o que ele faz.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 mt-14 border-t border-l border-line" data-reveal>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 mt-14 border-t border-l border-line" data-reveal-group>
             {FEATURES.map(([Icon, title, desc], index) => (
               <div
                 key={title}
@@ -285,8 +285,8 @@ export default function LandingPage() {
               registrando o que você já jogou: é assim que as indicações passam a
               fazer sentido.
             </p>
-            <Link to="/galeria" className={`${btnGhost} mt-9`}>
-              Ver a galeria <ArrowRight size={18} />
+            <Link to="/games" className={`${btnGhost} mt-9`}>
+              Explorar o catálogo <ArrowRight size={18} />
             </Link>
           </div>
         </div>
@@ -300,12 +300,21 @@ export default function LandingPage() {
       {topRated && (
         <section className="border-y border-line">
           <div className="relative overflow-hidden" data-reveal>
+            {/* Desfoque pesado, e nao so escurecimento: a capa tem 600x900 e aqui
+                ela e esticada pra largura inteira, entao os artefatos de
+                ampliacao apareceriam. O blur resolve os dois problemas de uma vez
+                - some com a perda de qualidade e transforma a arte em atmosfera
+                de cor, que e o papel dela nesta faixa.
+
+                scale(1.1) porque o filtro desfoca ATE a borda, deixando um halo
+                transparente em volta; ampliar um pouco empurra esse halo pra fora
+                da area visivel. */}
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-cover bg-center"
+              className="absolute inset-0 bg-cover bg-center scale-110"
               style={{
                 backgroundImage: topRated.coverUrl ? `url(${topRated.coverUrl})` : undefined,
-                filter: 'brightness(0.28) saturate(0.7)',
+                filter: 'brightness(0.32) saturate(0.6) blur(28px)',
               }}
             />
             <div
@@ -363,7 +372,7 @@ export default function LandingPage() {
               ver tudo <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid gap-5 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]" data-reveal>
+          <div className="grid gap-5 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]" data-reveal-group>
             {preview.map((game) => <GameCard key={game.id} game={game} />)}
           </div>
         </section>
@@ -378,7 +387,7 @@ export default function LandingPage() {
               Três pessoas que pararam de esquecer.
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 mt-12 border-t border-l border-line" data-reveal>
+          <div className="grid md:grid-cols-3 mt-12 border-t border-l border-line" data-reveal-group>
             {TESTIMONIALS.map(([name, quote]) => (
               <figure key={name} className="p-8 border-r border-b border-line">
                 <Quote size={20} className="text-accent" />

@@ -5,6 +5,7 @@ import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
 import StarRating from '@/ui/star-rating.jsx'
 import GameCover from '@/ui/game-cover.jsx'
+import { useReveal } from '@/ui/use-reveal.js'
 import Spinner from '@/ui/spinner.jsx'
 import AddToCollectionModal from '@/features/collection/add-to-collection-modal.jsx'
 import { card, btnPrimary } from '@/lib/ui.js'
@@ -35,6 +36,10 @@ export default function ProfilePage() {
     loadCollection()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username])
+
+  // Reobserva ao trocar de aba: as listas de avaliações e de coleção são
+  // conteúdos diferentes, e cada uma entra animada quando aparece.
+  useReveal([profile?.username, tab, collection.length])
 
   if (error) return <div className={wrap}><p className="text-danger font-medium">{error}</p></div>
   if (!profile) return <div className={wrap}><Spinner /></div>
@@ -75,7 +80,7 @@ export default function ProfilePage() {
       {tab === 'reviews' && (
         <>
           {profile.reviews.length === 0 && <p className="text-slate text-sm">Ainda não avaliou nenhum jogo.</p>}
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-3" data-reveal-group>
             {profile.reviews.map((review) => (
               <li key={review.id} className={`${card} p-4 flex gap-4`}>
                 <Link to={`/games/${review.gameId}`} className="shrink-0">
@@ -108,14 +113,14 @@ export default function ProfilePage() {
           {collection.length === 0 ? (
             <p className="text-slate text-sm">A coleção está vazia.</p>
           ) : (
-            <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
+            <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]" data-reveal-group>
               {collection.map((entry) => (
                 <Link
                   key={entry.id}
                   to={`/games/${entry.gameId}`}
-                  className="group block bg-canvas border border-line overflow-hidden transition hover:border-accent"
+                  className="group block bg-mist border border-line overflow-hidden transition-colors hover:border-accent"
                 >
-                  <GameCover game={{ title: entry.gameTitle, coverUrl: entry.gameCoverUrl }} className="aspect-video" />
+                  <GameCover game={{ title: entry.gameTitle, coverUrl: entry.gameCoverUrl }} className="aspect-[3/4] transition-transform duration-700 group-hover:scale-105" />
                   <div className="p-3.5">
                     <h3 className="font-display font-bold text-sm text-ink leading-tight truncate" title={entry.gameTitle}>{entry.gameTitle}</h3>
                     <div className="flex items-center justify-between mt-2">
