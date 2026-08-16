@@ -1,0 +1,37 @@
+# Configuracao especifica do API Gateway.
+#
+# Este arquivo existe pelo mesmo motivo do discovery-server.yml: a hierarquia de
+# precedencia do Spring Cloud Config. O application.yml compartilhado manda
+#
+#     include: health,info,refresh,circuitbreakers
+#
+# pra TODO cliente, e configuracao vinda do servidor tem prioridade sobre o
+# application.yml local do servico. O gateway declara localmente
+# "include: health,info,gateway", mas essa lista era descartada - e
+# /actuator/gateway/routes respondia 404, sem nada na configuracao parecer errado,
+# porque o arquivo local do gateway estava certo o tempo todo.
+#
+# O arquivo com o NOME DO SERVICO vence o compartilhado, entao e aqui que a
+# excecao se resolve - sem enfraquecer a regra geral pros outros servicos.
+#
+# Por que /actuator/gateway importa: e onde se ve quais rotas estao ativas e pra
+# onde cada uma aponta. Numa demonstracao, e a prova visivel de que o roteamento
+# resolve por NOME de servico (lb://gamelog) e nao por endereco fixo.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,gateway
+
+  endpoint:
+    gateway:
+      # Expor na lista acima NAO basta. A partir do Spring Cloud Gateway 4.x este
+      # endpoint vem DESABILITADO por padrao - ele revela a topologia interna
+      # (quais servicos existem e como sao alcancados), entao o padrao seguro e
+      # ficar fora do ar ate alguem pedir explicitamente.
+      #
+      # Aqui ele e ligado porque e a janela pra enxergar o roteamento funcionando.
+      # Em producao ficaria atras de autenticacao, junto do resto do actuator - ver
+      # a secao de limitacoes de seguranca em docs/MICROSSERVICO.md.
+      enabled: true
