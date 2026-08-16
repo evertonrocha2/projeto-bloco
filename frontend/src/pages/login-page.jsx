@@ -44,7 +44,7 @@ export default function LoginPage() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <label className="flex flex-col gap-2">
           <span className="eyebrow">usuário</span>
           <input

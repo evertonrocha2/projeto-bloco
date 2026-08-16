@@ -46,29 +46,33 @@ export default function RegisterPage() {
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-2">
-          <span className="eyebrow">usuário</span>
-          <input
-            className={fieldLarge}
-            placeholder="como você quer ser chamado"
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        {/* Usuario e email lado a lado: sao curtos, e empilhar tudo num painel
+            largo deixaria o formulario comprido a toa. */}
+        <div className="grid sm:grid-cols-2 gap-5">
+          <label className="flex flex-col gap-2">
+            <span className="eyebrow">usuário</span>
+            <input
+              className={fieldLarge}
+              placeholder="como você quer ser chamado"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </label>
 
-        <label className="flex flex-col gap-2">
-          <span className="eyebrow">email</span>
-          <input
-            className={fieldLarge}
-            type="email"
-            placeholder="voce@email.com"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
+          <label className="flex flex-col gap-2">
+            <span className="eyebrow">email</span>
+            <input
+              className={fieldLarge}
+              type="email"
+              placeholder="voce@email.com"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+        </div>
 
         <label className="flex flex-col gap-2">
           <span className="eyebrow">senha</span>

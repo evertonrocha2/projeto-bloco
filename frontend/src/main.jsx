@@ -1,5 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+
+// Marca que o JavaScript esta ativo. As regras de animacao no CSS so escondem
+// conteudo sob esta classe, entao uma falha no script degrada pra pagina sem
+// animacao em vez de pagina com secoes em branco.
+document.documentElement.classList.add('js-reveal')
 import { BrowserRouter } from 'react-router-dom'
 import App from './app.jsx'
 import { AuthProvider } from '@/lib/auth.jsx'

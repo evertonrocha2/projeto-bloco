@@ -82,7 +82,17 @@ h1, h2, h3 {
    IntersectionObserver (ui/use-reveal.js) adiciona .is-revealed quando eles
    entram na tela. O cubic-bezier desacelera no fim - a peca "assenta" em vez de
    parar seco. */
-[data-reveal] {
+/* Repare no prefixo .js-reveal em todas as regras que ESCONDEM conteudo.
+   Essa classe e posta em <html> pelo main.jsx, ou seja, so existe se o
+   JavaScript rodou. Sem ela o conteudo aparece normalmente.
+
+   O motivo e concreto: estas regras escondem secoes inteiras esperando uma
+   classe que o observer adiciona depois. Se o script falhar em carregar, se um
+   erro anterior interromper a execucao, ou se o seletor do observer nao casar
+   com o atributo usado no HTML, a pagina fica com blocos em branco e nenhum
+   erro visivel. Condicionar ao JS transforma essa falha silenciosa em, no pior
+   caso, uma pagina sem animacao. */
+.js-reveal [data-reveal] {
   opacity: 0;
   transform: translateY(32px);
   transition:
@@ -90,7 +100,7 @@ h1, h2, h3 {
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-reveal].is-revealed {
+.js-reveal [data-reveal].is-revealed {
   opacity: 1;
   transform: none;
 }
@@ -100,7 +110,7 @@ h1, h2, h3 {
    componente precisar calcular indice nem receber style inline. Para no 12o
    item: alem disso a espera acumulada passaria de meio segundo e a ultima peca
    pareceria travada. */
-[data-reveal-group] > * {
+.js-reveal [data-reveal-group] > * {
   opacity: 0;
   transform: translateY(26px);
   transition:
@@ -108,20 +118,20 @@ h1, h2, h3 {
     transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-reveal-group].is-revealed > * {
+.js-reveal [data-reveal-group].is-revealed > * {
   opacity: 1;
   transform: none;
 }
 
-[data-reveal-group].is-revealed > *:nth-child(1)  { transition-delay: 0.00s; }
-[data-reveal-group].is-revealed > *:nth-child(2)  { transition-delay: 0.05s; }
-[data-reveal-group].is-revealed > *:nth-child(3)  { transition-delay: 0.10s; }
-[data-reveal-group].is-revealed > *:nth-child(4)  { transition-delay: 0.15s; }
-[data-reveal-group].is-revealed > *:nth-child(5)  { transition-delay: 0.20s; }
-[data-reveal-group].is-revealed > *:nth-child(6)  { transition-delay: 0.25s; }
-[data-reveal-group].is-revealed > *:nth-child(7)  { transition-delay: 0.30s; }
-[data-reveal-group].is-revealed > *:nth-child(8)  { transition-delay: 0.35s; }
-[data-reveal-group].is-revealed > *:nth-child(n+9) { transition-delay: 0.40s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(1)  { transition-delay: 0.00s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(2)  { transition-delay: 0.05s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(3)  { transition-delay: 0.10s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(4)  { transition-delay: 0.15s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(5)  { transition-delay: 0.20s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(6)  { transition-delay: 0.25s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(7)  { transition-delay: 0.30s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(8)  { transition-delay: 0.35s; }
+.js-reveal [data-reveal-group].is-revealed > *:nth-child(n+9) { transition-delay: 0.40s; }
 
 /* Barra de progresso da rolagem, no topo. Anima por transform (scaleX), que o
    navegador resolve na GPU - animar "width" forcaria recalculo de layout a cada
@@ -145,7 +155,7 @@ h1, h2, h3 {
   to   { opacity: 1; transform: none; }
 }
 
-.hero-stagger > * {
+.js-reveal .hero-stagger > * {
   opacity: 0;
   animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -161,7 +171,7 @@ h1, h2, h3 {
   to   { opacity: var(--ambient-opacity, 1); transform: none; }
 }
 
-.ambient-in {
+.js-reveal .ambient-in {
   opacity: 0;
   animation: ambient-in 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
 }

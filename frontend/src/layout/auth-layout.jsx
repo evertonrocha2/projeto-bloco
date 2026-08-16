@@ -44,13 +44,18 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
       </header>
 
       <main className="relative flex-1 flex items-center justify-center px-6 py-10">
-        <div className="hero-stagger w-full max-w-md bg-canvas/85 backdrop-blur-md border border-line p-8 sm:p-10">
+        {/* Painel largo e translucido: o desfoque forte e o que deixa a arte
+            atravessar sem prejudicar a leitura. Com fundo quase opaco a imagem
+            sumia atras de um retangulo preto, e o painel estreito fazia os campos
+            parecerem espremidos - num formulario que e a unica coisa da tela, isso
+            passa sensacao de aperto. */}
+        <div className="hero-stagger w-full max-w-2xl bg-canvas/55 backdrop-blur-2xl border border-line/80 p-8 sm:p-12">
           <p className="eyebrow">{eyebrow}</p>
-          <h1 className="font-display font-bold text-4xl text-ink leading-[1.05] mt-3">
+          <h1 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.03] mt-3">
             {title}
           </h1>
           <p className="text-slate mt-3 leading-relaxed">{subtitle}</p>
-          <div className="mt-8">{children}</div>
+          <div className="mt-9">{children}</div>
         </div>
       </main>
 

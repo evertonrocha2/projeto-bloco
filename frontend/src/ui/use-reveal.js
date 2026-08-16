@@ -16,7 +16,16 @@ import { useEffect } from 'react'
 // acrescenta a classe, sem nunca esconder nada.
 export function useReveal(deps = []) {
   useEffect(() => {
-    const alvos = document.querySelectorAll('[data-reveal]:not(.is-revealed)')
+    // Os DOIS atributos precisam estar aqui. data-reveal anima o proprio
+    // elemento; data-reveal-group anima os filhos em cascata - mas em ambos os
+    // casos quem recebe a classe .is-revealed e o elemento marcado.
+    //
+    // Esquecer o segundo seletor deixa as grades presas em opacity: 0
+    // permanentemente: o CSS esconde os filhos esperando uma classe que nunca
+    // chega. A secao inteira some da pagina sem nenhum erro no console.
+    const alvos = document.querySelectorAll(
+      '[data-reveal]:not(.is-revealed), [data-reveal-group]:not(.is-revealed)',
+    )
     if (alvos.length === 0) return
 
     const observer = new IntersectionObserver(
