@@ -100,7 +100,7 @@ export default function RecommendationsPage() {
           <span className="grid place-items-center h-12 w-12 bg-accent/10 text-accent mx-auto">
             <Sparkles size={22} />
           </span>
-          <h1 className="font-display font-extrabold text-2xl text-ink mt-4">
+          <h1 className="font-display font-bold text-2xl text-ink mt-4">
             Recomendações são pessoais
           </h1>
           <p className="text-slate mt-2">
@@ -145,7 +145,7 @@ export default function RecommendationsPage() {
                 {/* Deixa visivel se os dados vieram de um calculo novo ou do lote salvo */}
                 {data && <ServiceStatusBadge stale={data.stale} />}
               </div>
-              <h1 className="font-display font-extrabold text-4xl sm:text-5xl text-ink leading-[1.02] mt-4">
+              <h1 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.02] mt-4">
                 O que jogar depois
               </h1>
               <p className="text-slate mt-4 max-w-lg leading-relaxed">

@@ -30,7 +30,7 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md mx-auto px-6 py-20">
       <div className={`${card} p-8`}>
-        <h1 className="font-display font-extrabold text-2xl text-ink">Criar conta</h1>
+        <h1 className="font-display font-bold text-2xl text-ink">Criar conta</h1>
         <p className="text-slate text-sm mt-1">Leva menos de um minuto.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 mt-6">
           <input name="username" className={field} placeholder="Usuário" value={form.username} onChange={update} />

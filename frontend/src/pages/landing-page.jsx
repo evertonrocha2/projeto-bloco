@@ -107,7 +107,7 @@ export default function LandingPage() {
         <div className={`${wrap} py-28 sm:py-36 w-full`}>
           <div className="hero-stagger max-w-3xl">
             <p className="eyebrow">catálogo · avaliações · coleção</p>
-            <h1 className="font-display font-extrabold text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
+            <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
               Você já esqueceu<br />metade do que jogou.
             </h1>
             <p className="text-lg text-slate mt-7 max-w-xl leading-relaxed">
@@ -162,19 +162,26 @@ export default function LandingPage() {
 
       <Marquee />
 
-      {/* ==================== NÚMEROS ==================== */}
-      <section className={`${wrap} py-20`}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 border-t border-line" data-reveal>
+      {/* ==================== NÚMEROS ====================
+          Cada número fica CENTRADO na sua coluna, e as três colunas dividem a
+          largura em partes iguais. Antes o conteúdo era alinhado à esquerda com
+          padding solto, então cada célula tinha uma quantidade diferente de ar em
+          volta e o conjunto parecia torto. */}
+      <section className={`${wrap} py-16`}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 border-y border-line" data-reveal>
           {[
             [games.length, 'jogos no catálogo'],
             [totalReviews, 'avaliações publicadas'],
             [categories.length, 'gêneros pra explorar'],
           ].map(([valor, label]) => (
-            <div key={label} className="py-10 px-2 border-b sm:border-b-0 sm:border-r border-line last:border-r-0 first:pl-0">
-              <div className="font-display font-extrabold text-6xl text-ink tabular-nums leading-none">
+            <div
+              key={label}
+              className="flex flex-col items-center justify-center text-center py-12 px-4 border-b sm:border-b-0 sm:border-r border-line last:border-r-0 last:border-b-0"
+            >
+              <div className="font-display font-bold text-5xl sm:text-6xl text-accent tabular-nums leading-none">
                 {valor}
               </div>
-              <div className="eyebrow mt-4">{label}</div>
+              <div className="eyebrow mt-3">{label}</div>
             </div>
           ))}
         </div>
@@ -185,7 +192,7 @@ export default function LandingPage() {
         <div className={`${wrap} py-24`}>
           <div className="max-w-2xl" data-reveal>
             <p className="eyebrow">o que dá pra fazer</p>
-            <h2 className="font-display font-extrabold text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
+            <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
               Seis coisas. Bem feitas.
             </h2>
             <p className="text-lg text-slate mt-5 leading-relaxed">
@@ -216,7 +223,7 @@ export default function LandingPage() {
         <div className="grid lg:grid-cols-[1fr_1.5fr] gap-12" data-reveal>
           <div>
             <p className="eyebrow">por que registrar</p>
-            <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
               A gente joga muito e esquece quase tudo.
             </h2>
           </div>
@@ -272,7 +279,7 @@ export default function LandingPage() {
                 />
                 <div className="max-w-xl">
                   <p className="eyebrow">o mais bem avaliado</p>
-                  <h2 className="font-display font-extrabold text-4xl sm:text-5xl text-ink mt-4 leading-[1.03]">
+                  <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink mt-4 leading-[1.03]">
                     {topRated.title}
                   </h2>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-5">
@@ -306,7 +313,7 @@ export default function LandingPage() {
           <div className="flex items-end justify-between mb-10" data-reveal>
             <div>
               <p className="eyebrow">em alta</p>
-              <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-ink mt-3">
+              <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-3">
                 O que está sendo jogado
               </h2>
             </div>
@@ -325,7 +332,7 @@ export default function LandingPage() {
         <div className={`${wrap} py-24`}>
           <div className="max-w-2xl" data-reveal>
             <p className="eyebrow">quem usa</p>
-            <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
               Três pessoas que pararam de esquecer.
             </h2>
           </div>
@@ -353,7 +360,7 @@ export default function LandingPage() {
         <section className={`${wrap} py-24`}>
           <div data-reveal>
             <p className="eyebrow">navegue por gênero</p>
-            <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-ink mt-4 max-w-xl leading-[1.08]">
+            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-4 max-w-xl leading-[1.08]">
               Comece por algo que você já gosta.
             </h2>
             <div className="flex flex-wrap gap-2 mt-9">
@@ -396,7 +403,7 @@ export default function LandingPage() {
 
           <div className={`${wrap} relative py-32 sm:py-40 text-center`} data-reveal>
             <p className="eyebrow">leva um minuto</p>
-            <h2 className="font-display font-extrabold text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
+            <h2 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
               Comece a<br />registrar hoje.
             </h2>
             <p className="text-lg text-slate mt-7 max-w-lg mx-auto leading-relaxed">

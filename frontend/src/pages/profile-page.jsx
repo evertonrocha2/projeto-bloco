@@ -56,11 +56,11 @@ export default function ProfilePage() {
   return (
     <div className={wrap}>
       <header className="flex flex-wrap items-center gap-5 mb-10">
-        <span className="grid place-items-center h-16 w-16 shrink-0 bg-accent text-canvas font-display font-extrabold text-2xl">
+        <span className="grid place-items-center h-16 w-16 shrink-0 bg-accent text-canvas font-display font-bold text-2xl">
           {profile.username.charAt(0).toUpperCase()}
         </span>
         <div>
-          <h1 className="font-display font-extrabold text-2xl text-ink">@{profile.username}</h1>
+          <h1 className="font-display font-bold text-2xl text-ink">@{profile.username}</h1>
           {profile.bio && <p className="text-slate text-sm mt-0.5">{profile.bio}</p>}
           <p className="text-xs text-slate/80 mt-1">Membro desde {memberSince}</p>
         </div>

@@ -23,7 +23,7 @@
   --color-warning: #fbbf24;
   --color-danger: #fb7185;
 
-  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
   --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
   --animate-marquee: marquee 32s linear infinite;
@@ -48,8 +48,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Titulos apertados: em corpo grande a Bricolage pede tracking negativo, senao as
-   palavras flutuam. O optical sizing dela ja ajusta o desenho por tamanho. */
+/* Titulos apertados: em corpo grande a Chakra Petch pede tracking negativo, senao as
+   palavras flutuam. */
 h1, h2, h3 {
   font-family: var(--font-display);
   letter-spacing: -0.03em;

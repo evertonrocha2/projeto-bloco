@@ -27,7 +27,7 @@ export default function LoginPage() {
   return (
     <div className="max-w-md mx-auto px-6 py-20">
       <div className={`${card} p-8`}>
-        <h1 className="font-display font-extrabold text-2xl text-ink">Entrar</h1>
+        <h1 className="font-display font-bold text-2xl text-ink">Entrar</h1>
         <p className="text-slate text-sm mt-1">Bom te ver de novo.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6">
           <input className={field} placeholder="Usuário" value={username} onChange={(e) => setUsername(e.target.value)} />

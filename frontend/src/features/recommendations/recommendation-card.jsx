@@ -25,7 +25,7 @@ export default function RecommendationCard({ item, onFeedback, busy }) {
         <div className="relative overflow-hidden">
           <GameCover
             game={{ title: item.gameTitle, coverUrl: item.gameCoverUrl }}
-            className="aspect-video transition-transform duration-500 group-hover:scale-105"
+            className="aspect-[3/4] transition-transform duration-700 group-hover:scale-105"
           />
 
           {/* Pontuacao: maximo teorico 5.0 (3.0 de genero + 2.0 de comunidade) */}

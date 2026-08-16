@@ -18,7 +18,7 @@ export default function GameCard({ game, onQuickAdd }) {
         <div className="relative overflow-hidden">
           <GameCover
             game={game}
-            className="aspect-video transition-transform duration-500 group-hover:scale-105"
+            className="aspect-[3/4] transition-transform duration-700 group-hover:scale-105"
           />
           <span className="absolute top-0 left-0 text-[0.7rem] font-medium tracking-wide px-2.5 py-1 bg-canvas/90 text-ink border-r border-b border-line backdrop-blur">
             {primaryGenre(game)}

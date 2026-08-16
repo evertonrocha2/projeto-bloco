@@ -64,7 +64,7 @@ export default function GamesPage() {
       <div className="flex flex-wrap items-end justify-between gap-4 pb-8 mb-8 border-b border-line">
         <div>
           <p className="eyebrow">{games.length} títulos</p>
-          <h1 className="font-display font-extrabold text-4xl sm:text-5xl text-ink leading-[1.02] mt-3">
+          <h1 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.02] mt-3">
             Catálogo
           </h1>
           <p className="text-slate mt-3 max-w-md leading-relaxed">
