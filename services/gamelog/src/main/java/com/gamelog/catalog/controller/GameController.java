@@ -7,7 +7,10 @@ import com.gamelog.catalog.dto.GameResponse;
 import com.gamelog.catalog.service.GameService;
 import com.gamelog.review.dto.RatingStats;
 import com.gamelog.review.dto.ReviewResponse;
+import com.gamelog.review.dto.ReviewSocial;
 import com.gamelog.review.service.ReviewService;
+import com.gamelog.review.service.ReviewSocialService;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.Page;
@@ -28,10 +31,14 @@ public class GameController {
 
     private final GameService gameService;
     private final ReviewService reviewService;
+    private final ReviewSocialService reviewSocialService;
 
-    public GameController(GameService gameService, ReviewService reviewService) {
+    public GameController(GameService gameService,
+                          ReviewService reviewService,
+                          ReviewSocialService reviewSocialService) {
         this.gameService = gameService;
         this.reviewService = reviewService;
+        this.reviewSocialService = reviewSocialService;
     }
 
     // Lista todos os jogos, cada um ja com sua media de nota e total de reviews.
@@ -77,11 +84,30 @@ public class GameController {
         );
     }
 
-    // Pagina de um jogo: dados + resumo das notas + todas as reviews.
+    // Pagina de um jogo: dados + resumo das notas + todas as reviews, cada uma
+    // com seus votos e sua arvore de respostas.
+    //
+    // O social e carregado EM LOTE, uma vez pra pagina inteira. Buscar por review
+    // seriam tres consultas por avaliacao listada, e o custo cresceria com a
+    // popularidade do jogo - a pagina ficaria mais lenta justamente onde mais
+    // gente entra.
+    //
+    // O Principal e anulavel: esta rota e publica, entao quem nao esta logado ve
+    // as contagens sem ter voto proprio marcado.
     @GetMapping("/{id}")
-    public GameDetailResponse getById(@PathVariable Long id) {
+    public GameDetailResponse getById(@PathVariable Long id, Principal principal) {
         Game game = gameService.findById(id);
         List<ReviewResponse> reviews = reviewService.findByGame(id);
-        return GameDetailResponse.from(game, reviewService.statsForGame(id), reviews);
+
+        String viewer = principal == null ? null : principal.getName();
+        Map<Long, ReviewSocial> social = reviewSocialService.loadFor(
+                reviews.stream().map(ReviewResponse::id).toList(), viewer);
+
+        List<ReviewResponse> comSocial = reviews.stream()
+                .map(review -> review.withSocial(
+                        social.getOrDefault(review.id(), ReviewSocial.empty())))
+                .toList();
+
+        return GameDetailResponse.from(game, reviewService.statsForGame(id), comSocial);
     }
 }

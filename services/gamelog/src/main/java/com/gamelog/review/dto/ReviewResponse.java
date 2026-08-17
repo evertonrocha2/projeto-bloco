@@ -15,9 +15,16 @@ public record ReviewResponse(
         String username,
         Long gameId,
         String gameTitle,
-        String gameCoverUrl
+        String gameCoverUrl,
+
+        // Votos e respostas. Nulo quando quem montou a resposta nao carregou a
+        // camada social - o historico de revisoes, por exemplo, nao tem por que
+        // pagar tres consultas pra dizer quantos polegares uma versao antiga
+        // tinha.
+        ReviewSocial social
 ) {
-    // Fabrica que converte a entidade do banco no DTO da API.
+    // Fabrica que converte a entidade do banco no DTO da API. Sem social: quem
+    // precisa dele carrega em lote e chama withSocial.
     public static ReviewResponse from(Review review) {
         return new ReviewResponse(
                 review.getId(),
@@ -27,7 +34,18 @@ public record ReviewResponse(
                 review.getUser().getUsername(),
                 review.getGame().getId(),
                 review.getGame().getTitle(),
-                review.getGame().getCoverUrl()
+                review.getGame().getCoverUrl(),
+                null
         );
+    }
+
+    // Copia com a camada social presa.
+    //
+    // Separado da fabrica porque o social vem de uma consulta em LOTE, feita uma
+    // vez pra pagina inteira. Se a fabrica o buscasse, cada review carregaria os
+    // proprios votos - que e exatamente o N+1 que a consulta agrupada evita.
+    public ReviewResponse withSocial(ReviewSocial social) {
+        return new ReviewResponse(
+                id, rating, text, createdAt, username, gameId, gameTitle, gameCoverUrl, social);
     }
 }
