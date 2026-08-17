@@ -5,6 +5,8 @@ import com.gamelog.identity.domain.User;
 import com.gamelog.shared.persistence.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -52,14 +54,21 @@ public class CollectionEntry extends Auditable {
     @Column(nullable = false)
     private int hoursPlayed;
 
-    // Situacao do jogo na colecao: "Quero jogar", "Jogando", "Zerado", "Largado".
-    @Column(nullable = false)
-    private String status;
+    // Situacao do jogo na colecao. Enum, e nao String livre: o conjunto de valores
+    // possiveis passa a existir num lugar so, e um valor invalido e recusado antes
+    // de virar linha no banco.
+    //
+    // EnumType.STRING guarda o nome (QUERO_JOGAR) em vez do indice. Com ORDINAL,
+    // inserir um valor novo no meio do enum reinterpretaria silenciosamente todos
+    // os dados ja gravados.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private CollectionStatus status;
 
     protected CollectionEntry() {
     }
 
-    public CollectionEntry(User user, Game game, int hoursPlayed, String status) {
+    public CollectionEntry(User user, Game game, int hoursPlayed, CollectionStatus status) {
         this.user = user;
         this.game = game;
         this.hoursPlayed = hoursPlayed;
@@ -87,11 +96,11 @@ public class CollectionEntry extends Auditable {
         this.hoursPlayed = hoursPlayed;
     }
 
-    public String getStatus() {
+    public CollectionStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(CollectionStatus status) {
         this.status = status;
     }
 }
