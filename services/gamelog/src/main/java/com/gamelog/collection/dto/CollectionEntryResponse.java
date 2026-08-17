@@ -11,7 +11,10 @@ public record CollectionEntryResponse(
         String gameTitle,
         String gameCoverUrl,
         int hoursPlayed,
+        // O codigo (PLATINADO) pro front filtrar, e o rotulo ("Platinado") pra
+        // exibir. Mandar so o rotulo obrigaria a tela a comparar texto traduzido.
         String status,
+        String statusLabel,
         Instant createdAt
 ) {
     public static CollectionEntryResponse from(CollectionEntry entry) {
@@ -21,7 +24,8 @@ public record CollectionEntryResponse(
                 entry.getGame().getTitle(),
                 entry.getGame().getCoverUrl(),
                 entry.getHoursPlayed(),
-                entry.getStatus(),
+                entry.getStatus().name(),
+                entry.getStatus().getLabel(),
                 entry.getCreatedAt()
         );
     }

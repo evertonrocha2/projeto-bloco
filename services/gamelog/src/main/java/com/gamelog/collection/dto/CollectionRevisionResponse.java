@@ -25,7 +25,7 @@ public record CollectionRevisionResponse(
                 meta.getInstant(),
                 meta.getUsername(),
                 snapshot.getHoursPlayed(),
-                snapshot.getStatus()
+                snapshot.getStatus().getLabel()
         );
     }
 }
