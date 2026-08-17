@@ -52,7 +52,12 @@ public class SecurityConfig {
                         // responde 404 pra qualquer outra pessoa - inclusive nas rotas de
                         // escrita, onde 403 deixaria descobrir quais ids existem testando
                         // um por um.
-                        .requestMatchers(HttpMethod.GET, "/api/games/**", "/api/users/**", "/api/lists/**").permitAll()
+                        //
+                        // /api/uploads/** liberado no GET porque a imagem aparece num
+                        // perfil publico: exigir token pra carregar um avatar faria a
+                        // foto sumir justamente pra quem visita sem conta. ENVIAR
+                        // continua exigindo login (cai no anyRequest abaixo).
+                        .requestMatchers(HttpMethod.GET, "/api/games/**", "/api/users/**", "/api/lists/**", "/api/uploads/**").permitAll()
                         // Console do H2 liberado pra inspecionar o banco em desenvolvimento.
                         .requestMatchers("/h2-console/**").permitAll()
                         // Endpoints de monitoramento liberados. Sao consultados por

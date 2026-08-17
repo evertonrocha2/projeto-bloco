@@ -6,6 +6,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Map;
 
@@ -39,6 +40,19 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "Corpo da requisicao invalido ou com valor nao aceito."));
+    }
+
+    // Arquivo maior que spring.servlet.multipart.max-file-size.
+    //
+    // Este limite corta a requisicao ANTES de o corpo chegar ao controller, entao a
+    // checagem do ImageStorageService nunca roda e a mensagem dela nunca aparece.
+    // Sem este handler a excecao sobe sem tratamento e o cliente recebe 500 - ou
+    // seja, "sua imagem e grande demais" se apresenta como falha do servidor, e
+    // quem estiver enviando vai tentar de novo achando que foi instabilidade.
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleTooLarge(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "A imagem passa de 5 MB"));
     }
 
     // Disparada quando uma anotacao de validacao (@NotBlank, @Min...) falha.

@@ -9,6 +9,12 @@ target/
 services/gamelog/data/
 services/recommendation-service/data/
 
+# Imagens enviadas pelos usuarios. Sao dado de execucao, nao codigo - e o
+# repositorio nao e lugar de guardar arquivo que qualquer pessoa logada pode
+# subir. Fica fora de data/ de proposito, pra sobreviver quando o banco e apagado
+# por mudanca de esquema.
+services/gamelog/uploads/
+
 # PDFs (entregas e documentos nao vao pro repositorio)
 *.pdf
 *.PDF
