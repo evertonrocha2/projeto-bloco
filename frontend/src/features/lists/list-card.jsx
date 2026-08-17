@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Lock, Layers } from 'lucide-react'
+import { resolveImageUrl } from '@/lib/image-url.js'
 
 // Uma lista no perfil ou na busca por tag.
 //
@@ -17,7 +18,7 @@ export default function ListCard({ list }) {
       {list.coverUrl && (
         <div className="relative aspect-[3/1] overflow-hidden border-b border-line">
           <img
-            src={list.coverUrl}
+            src={resolveImageUrl(list.coverUrl)}
             alt=""
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
             style={{ filter: 'brightness(0.55) saturate(0.9)' }}

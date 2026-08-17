@@ -17,6 +17,7 @@ import YearInReview from '@/features/profile/year-in-review.jsx'
 import EditProfileModal from '@/features/profile/edit-profile-modal.jsx'
 import { COLLECTION_STATUSES } from '@/lib/collection-status.js'
 import { card, btnPrimary, btnGhost } from '@/lib/ui.js'
+import { resolveImageUrl } from '@/lib/image-url.js'
 
 const wrap = 'max-w-5xl mx-auto px-6 py-12'
 
@@ -128,7 +129,7 @@ export default function ProfilePage() {
       {profile.bannerUrl && !bannerBroken && (
         <div className="relative aspect-[5/1] overflow-hidden border border-line mb-6">
           <img
-            src={profile.bannerUrl}
+            src={resolveImageUrl(profile.bannerUrl)}
             alt=""
             onError={() => setBannerBroken(true)}
             className="h-full w-full object-cover"
@@ -142,7 +143,7 @@ export default function ProfilePage() {
             já desenhava antes de existir avatar. */}
         {profile.avatarUrl && !avatarBroken ? (
           <img
-            src={profile.avatarUrl}
+            src={resolveImageUrl(profile.avatarUrl)}
             alt=""
             onError={() => setAvatarBroken(true)}
             className="h-16 w-16 shrink-0 object-cover border border-line"

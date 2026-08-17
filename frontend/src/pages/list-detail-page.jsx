@@ -9,6 +9,7 @@ import Spinner from '@/ui/spinner.jsx'
 import GamePicker from '@/features/catalog/game-picker.jsx'
 import ListEditor from '@/features/lists/list-editor.jsx'
 import { btnPrimary, btnGhost, field, card } from '@/lib/ui.js'
+import { resolveImageUrl } from '@/lib/image-url.js'
 
 const wrap = 'max-w-4xl mx-auto px-6 py-12'
 
@@ -111,7 +112,7 @@ export default function ListDetailPage() {
       {list.coverUrl && (
         <div className="relative aspect-[4/1] overflow-hidden border border-line mb-6">
           <img
-            src={list.coverUrl}
+            src={resolveImageUrl(list.coverUrl)}
             alt=""
             className="h-full w-full object-cover"
             style={{ filter: 'brightness(0.5) saturate(0.9)' }}

@@ -18,7 +18,10 @@
 //
 // Da pra apontar pra outro lugar com VITE_API_URL - inclusive direto pra 8080, se
 // alguem quiser rodar so o monolito, sem a stack distribuida.
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090'
+// Exportado porque o envio de imagem nao pode passar pelo request() abaixo: ele
+// fixa Content-Type: application/json, e multipart precisa que o navegador monte o
+// cabecalho com o boundary. O endereco continua definido num lugar so.
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090'
 
 // O token JWT fica no localStorage pra sobreviver a um F5 na pagina.
 export function getToken() {
