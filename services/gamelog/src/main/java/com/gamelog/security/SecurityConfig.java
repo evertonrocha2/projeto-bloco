@@ -44,8 +44,15 @@ public class SecurityConfig {
                         // "Meu perfil" depende de quem esta logado, entao exige token.
                         // Precisa vir ANTES da regra geral de /api/users/** abaixo.
                         .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
-                        // Ver catalogo e perfis e publico (leitura). Escrever exige login.
-                        .requestMatchers(HttpMethod.GET, "/api/games/**", "/api/users/**").permitAll()
+                        // Ver catalogo, perfis e listas e publico (leitura). Escrever exige login.
+                        //
+                        // "Publico" nao quer dizer "tudo aparece": em /api/lists/** o
+                        // Principal chega anulavel no controller, e o service usa isso pra
+                        // decidir se as listas privadas do dono entram. Lista privada
+                        // responde 404 pra qualquer outra pessoa - inclusive nas rotas de
+                        // escrita, onde 403 deixaria descobrir quais ids existem testando
+                        // um por um.
+                        .requestMatchers(HttpMethod.GET, "/api/games/**", "/api/users/**", "/api/lists/**").permitAll()
                         // Console do H2 liberado pra inspecionar o banco em desenvolvimento.
                         .requestMatchers("/h2-console/**").permitAll()
                         // Endpoints de monitoramento liberados. Sao consultados por

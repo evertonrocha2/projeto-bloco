@@ -71,6 +71,17 @@ class ImageUrlTest {
     }
 
     @Test
+    void recusaUrlComEsquemaOmitido() {
+        // "//evil.com/x.jpg" comeca com barra e passaria pelo ramo de caminho
+        // relativo, mas o navegador NAO o resolve como caminho: duas barras
+        // significam "mesmo esquema da pagina, outro host". Ou seja, a regra que
+        // existe pra aceitar arte da nossa propria origem estaria aceitando
+        // qualquer servidor do mundo.
+        assertThatThrownBy(() -> ImageUrl.sanitize("//evil.com/x.jpg"))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
     void recusaCaminhoQueNaoComecaComBarra() {
         // "exemplo.com/a.jpg" sem esquema seria resolvido como caminho relativo a
         // pagina atual e daria 404 - erro silencioso e confuso de diagnosticar.

@@ -40,11 +40,19 @@ public final class ImageUrl {
         // comparacao com "http" falharia dependendo da maquina que roda o servidor.
         String comparavel = url.toLowerCase(Locale.ROOT);
 
+        // Caminho na NOSSA origem: e como a galeria pronta chega, ja que as artes
+        // moram em frontend/public e sao servidas da raiz.
+        //
+        // O "!startsWith(//)" nao e detalhe. Duas barras nao sao um caminho: o
+        // navegador le "//evil.com/x.jpg" como "mesmo esquema da pagina, OUTRO
+        // host". Sem essa exclusao, a regra escrita pra aceitar arte da propria
+        // aplicacao aceitaria qualquer servidor do mundo - e escondida atras de um
+        // valor que parece um caminho local em toda inspecao superficial.
+        boolean caminhoLocal = url.startsWith("/") && !url.startsWith("//");
+
         boolean permitida = comparavel.startsWith("https://")
                 || comparavel.startsWith("http://")
-                // Caminho relativo: e como a galeria pronta chega, ja que as artes
-                // moram em frontend/public e sao servidas da raiz.
-                || url.startsWith("/");
+                || caminhoLocal;
 
         if (!permitida) {
             throw new BadRequestException(
