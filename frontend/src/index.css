@@ -23,7 +23,13 @@
   --color-warning: #fbbf24;
   --color-danger: #fb7185;
 
-  --font-display: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  /* Uma fonte por papel. A regra pra escolher: quanto maior o texto, mais
+     personalidade ele aguenta - por isso o h1 recebe a mais expressiva e o
+     corpo recebe a mais neutra. */
+  --font-title: "Prosto One", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Prosto One", ui-sans-serif, system-ui, sans-serif;
+  --font-pixel: "Silkscreen", ui-monospace, monospace;
+  --font-brand: "BBH Sans Bartle", "Prosto One", ui-sans-serif, sans-serif;
   --font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
   --animate-marquee: marquee 32s linear infinite;
@@ -48,23 +54,46 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Titulos apertados: em corpo grande a Chakra Petch pede tracking negativo, senao as
-   palavras flutuam. */
-h1, h2, h3 {
+/* h1 na Prosto One. Ela ja e larga e pesada por desenho, entao NAO leva tracking
+   negativo nem peso extra - apertar uma fonte assim empasta as letras. Alem
+   disso ela so tem um peso, e pedir bold faria o navegador sintetizar um
+   negrito falso. */
+h1 {
+  font-family: var(--font-title);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* h2 e h3 na mesma Prosto One. Como ela tem um peso so, a hierarquia entre os
+   niveis vem de TAMANHO e espaco, nao de peso - que e como tipografia editorial
+   resolve isso de qualquer jeito. */
+h2, h3 {
   font-family: var(--font-display);
-  letter-spacing: -0.03em;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 /* Micro-rotulo editorial ("EM ALTA", "/01"). E a mesma fonte dos titulos em corpo
    pequeno, maiuscula e com tracking bem aberto - resolve o ar de revista sem
    carregar uma terceira familia. */
+/* Micro-rotulo em pixel font. Silkscreen so funciona em corpo pequeno - e o
+   tamanho em que o desenho de pixel le como intencao, e nao como falha de
+   renderizacao. O tracking e menor que antes porque a fonte ja e espacada por
+   construcao. */
 .eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-family: var(--font-pixel);
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-slate);
+}
+
+/* A marca. Unico lugar onde a BBH Sans Bartle aparece: ela nao tem acentos, e
+   "GameLog" e ASCII puro. */
+.brand {
+  font-family: var(--font-brand);
+  letter-spacing: 0.01em;
 }
 
 /* Foco visivel em qualquer coisa navegavel por teclado. O ambar sobre quase-preto
