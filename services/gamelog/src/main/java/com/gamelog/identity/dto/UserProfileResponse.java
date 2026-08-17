@@ -11,6 +11,8 @@ public record UserProfileResponse(
         Long id,
         String username,
         String bio,
+        String avatarUrl,
+        String bannerUrl,
         Instant createdAt,
         List<ReviewResponse> reviews
 ) {

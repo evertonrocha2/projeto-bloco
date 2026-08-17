@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.Instant;
 import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
@@ -65,6 +66,20 @@ public class CollectionEntry extends Auditable {
     @Column(nullable = false, length = 20)
     private CollectionStatus status;
 
+    // Quando o jogo foi TERMINADO. Nulo enquanto nao foi.
+    //
+    // A retrospectiva do ano pergunta "o que voce zerou em 2026", e nenhum campo
+    // existente responde isso. createdAt e quando o jogo entrou na colecao - quem
+    // adicionou em janeiro e zerou em dezembro cairia na retrospectiva errada.
+    // updatedAt tambem nao serve: corrigir as horas depois moveria a conclusao
+    // junto.
+    //
+    // A alternativa era varrer o historico do Envers atras da revisao em que o
+    // status virou ZERADO. Correto, e uma consulta por item da colecao pra montar
+    // um bloco de perfil.
+    @Column
+    private Instant finishedAt;
+
     protected CollectionEntry() {
     }
 
@@ -72,7 +87,10 @@ public class CollectionEntry extends Auditable {
         this.user = user;
         this.game = game;
         this.hoursPlayed = hoursPlayed;
-        this.status = status;
+        // Passa pelo setter pra data de conclusao nascer preenchida quando o jogo
+        // ja entra terminado - caso comum de quem cadastra um jogo que zerou anos
+        // atras.
+        setStatus(status);
     }
 
     public Long getId() {
@@ -100,7 +118,32 @@ public class CollectionEntry extends Auditable {
         return status;
     }
 
+    // Mudar o status e o que grava - ou apaga - a data de conclusao.
+    //
+    // A regra fica aqui, no dominio, e nao no service: e a unica forma de a data
+    // nao poder divergir do status. Um caminho de escrita que esquecesse de
+    // atualiza-la produziria um jogo "zerado" sem data, invisivel na
+    // retrospectiva, ou um jogo "jogando" com data, contado num ano em que nao
+    // foi terminado.
     public void setStatus(CollectionStatus status) {
         this.status = status;
+
+        if (status == CollectionStatus.ZERADO || status == CollectionStatus.PLATINADO) {
+            // So na PRIMEIRA vez. Quem zera e depois volta pra platinar terminou o
+            // jogo uma vez; regravar mudaria o ano da conquista se a platina viesse
+            // no janeiro seguinte.
+            if (finishedAt == null) {
+                finishedAt = Instant.now();
+            }
+        } else {
+            // Desmarcar significa que o jogo nao esta terminado. Manter a data o
+            // deixaria na lista de "zerados do ano" sem estar zerado - um numero
+            // que a pessoa nao consegue explicar olhando a propria colecao.
+            finishedAt = null;
+        }
+    }
+
+    public Instant getFinishedAt() {
+        return finishedAt;
     }
 }

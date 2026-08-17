@@ -38,6 +38,16 @@ public class User extends Auditable {
     @Column(length = 500)
     private String bio;
 
+    // Imagem redonda ao lado do nome. Nulo cai na inicial em fundo ambar, que e
+    // o que o perfil ja desenhava antes de existir avatar.
+    @Column(length = 500)
+    private String avatarUrl;
+
+    // Faixa de fundo no topo do perfil. Separada do avatar porque sao papeis
+    // diferentes: uma identifica a pessoa, a outra da clima a pagina.
+    @Column(length = 500)
+    private String bannerUrl;
+
     // O JPA exige um construtor vazio pra conseguir instanciar a entidade.
     protected User() {
     }
@@ -71,5 +81,26 @@ public class User extends Auditable {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public String getBannerUrl() {
+        return bannerUrl;
+    }
+
+    // Editar o perfil muda so a aparencia publica. Username, email e senha ficam
+    // de fora de proposito: sao identidade e credencial, e cada um tem - ou vai
+    // ter - o proprio fluxo, com as proprias checagens.
+    //
+    // Recebe os tres juntos, e nao um setter por campo, porque e assim que a tela
+    // salva: um formulario, uma requisicao. Um campo que a pessoa apagou chega
+    // nulo e deve ficar nulo.
+    public void updateProfile(String bio, String avatarUrl, String bannerUrl) {
+        this.bio = bio;
+        this.avatarUrl = avatarUrl;
+        this.bannerUrl = bannerUrl;
     }
 }
