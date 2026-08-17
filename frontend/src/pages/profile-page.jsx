@@ -5,6 +5,7 @@ import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth.jsx'
 import StarRating from '@/ui/star-rating.jsx'
 import GameCover from '@/ui/game-cover.jsx'
+import GameCard from '@/ui/game-card.jsx'
 import { useReveal } from '@/ui/use-reveal.js'
 import Spinner from '@/ui/spinner.jsx'
 import AddToCollectionModal from '@/features/collection/add-to-collection-modal.jsx'
@@ -117,15 +118,12 @@ export default function ProfilePage() {
           ) : (
             <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]" data-reveal-group>
               {collection.map((entry) => (
-                <Link
+                <GameCard
                   key={entry.id}
                   to={`/games/${entry.gameId}`}
-                  className="group block bg-mist border border-line overflow-hidden transition-colors hover:border-accent"
-                >
-                  <GameCover game={{ title: entry.gameTitle, coverUrl: entry.gameCoverUrl }} className="aspect-[3/4] transition-transform duration-700 group-hover:scale-105" />
-                  <div className="p-3.5">
-                    <h3 className="font-display text-sm text-ink leading-tight truncate" title={entry.gameTitle}>{entry.gameTitle}</h3>
-                    <div className="flex items-center justify-between mt-2">
+                  game={{ title: entry.gameTitle, coverUrl: entry.gameCoverUrl }}
+                  footer={
+                    <div className="flex items-center justify-between">
                       {/* statusLabel vem pronto da API; entry.status e o codigo
                           do enum e mostraria "QUERO_JOGAR" cru na tela. */}
                       <span className="text-xs font-semibold text-accent bg-accent-soft px-2.5 py-0.5">{entry.statusLabel}</span>
@@ -133,8 +131,8 @@ export default function ProfilePage() {
                         <Clock size={12} /> {entry.hoursPlayed}h
                       </span>
                     </div>
-                  </div>
-                </Link>
+                  }
+                />
               ))}
             </div>
           )}
