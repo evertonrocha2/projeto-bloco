@@ -8,9 +8,18 @@ import com.gamelog.collection.domain.CollectionStatus;
 import com.gamelog.collection.repository.CollectionRepository;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
+import com.gamelog.list.domain.GameList;
+import com.gamelog.list.domain.ListVisibility;
+import com.gamelog.list.repository.GameListRepository;
 import com.gamelog.review.domain.Review;
+import com.gamelog.review.domain.ReviewReply;
+import com.gamelog.review.domain.ReviewVote;
+import com.gamelog.review.domain.VoteType;
+import com.gamelog.review.repository.ReviewReplyRepository;
 import com.gamelog.review.repository.ReviewRepository;
+import com.gamelog.review.repository.ReviewVoteRepository;
 import java.util.List;
+import java.util.Set;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -26,6 +35,9 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final CollectionRepository collectionRepository;
+    private final ReviewVoteRepository reviewVoteRepository;
+    private final ReviewReplyRepository reviewReplyRepository;
+    private final GameListRepository gameListRepository;
     private final GameImportService gameImportService;
     private final PasswordEncoder passwordEncoder;
 
@@ -33,12 +45,18 @@ public class DataSeeder implements CommandLineRunner {
                      UserRepository userRepository,
                      ReviewRepository reviewRepository,
                      CollectionRepository collectionRepository,
+                     ReviewVoteRepository reviewVoteRepository,
+                     ReviewReplyRepository reviewReplyRepository,
+                     GameListRepository gameListRepository,
                      GameImportService gameImportService,
                      PasswordEncoder passwordEncoder) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.collectionRepository = collectionRepository;
+        this.reviewVoteRepository = reviewVoteRepository;
+        this.reviewReplyRepository = reviewReplyRepository;
+        this.gameListRepository = gameListRepository;
         this.gameImportService = gameImportService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -72,16 +90,28 @@ public class DataSeeder implements CommandLineRunner {
                 "So um jogador que gosta de comentar sobre jogos."
         ));
 
+        // Segunda pessoa. Existe pra camada social ter com quem conversar: voto e
+        // resposta sao proibidos na propria avaliacao, entao com um usuario so
+        // NENHUMA das duas features seria observavel ao subir o projeto.
+        User critica = userRepository.save(new User(
+                "critica",
+                "critica@gamelog.com",
+                passwordEncoder.encode("demo123"),
+                "Jogo pouco e falo muito."
+        ));
+
         // Deixa o perfil e as paginas de jogo com algum conteudo de cara.
         // So cria se tiver jogos suficientes (a API pode variar a quantidade).
         if (games.size() >= 3) {
+            Review primeira = reviewRepository.save(new Review(demo, games.get(0), 5,
+                    "Joguei muito mais do que eu esperava. Recomendo demais."));
             reviewRepository.saveAll(List.of(
-                    new Review(demo, games.get(0), 5,
-                            "Joguei muito mais do que eu esperava. Recomendo demais."),
                     new Review(demo, games.get(1), 4,
                             "Bem divertido, mas precisa de um tempo pra pegar o jeito."),
                     new Review(demo, games.get(2), 3,
-                            "Passa o tempo, mas nada que vai mudar sua vida.")
+                            "Passa o tempo, mas nada que vai mudar sua vida."),
+                    new Review(critica, games.get(0), 3,
+                            "Bonito, mas repetitivo depois da terceira regiao.")
             ));
 
             // Tambem ja deixa alguns jogos na colecao do demo, com horas e status.
@@ -90,7 +120,47 @@ public class DataSeeder implements CommandLineRunner {
                     new CollectionEntry(demo, games.get(1), 45, CollectionStatus.JOGANDO),
                     new CollectionEntry(demo, games.get(2), 0, CollectionStatus.QUERO_JOGAR)
             ));
+
+            semearConversa(primeira, demo, critica);
+            semearListas(demo, games);
         }
+    }
+
+    // Uma discussao de exemplo na primeira avaliacao: dois votos e uma thread de
+    // tres niveis.
+    //
+    // Sem isto as telas novas nascem vazias, e "vazio" e indistinguivel de
+    // "quebrado" pra quem abre o projeto pela primeira vez - inclusive pra quem
+    // for avaliar o trabalho.
+    private void semearConversa(Review alvo, User demo, User critica) {
+        reviewVoteRepository.save(new ReviewVote(critica, alvo, VoteType.POSITIVE));
+
+        ReviewReply raiz = reviewReplyRepository.save(new ReviewReply(
+                alvo, critica, null, "Discordo do 5, mas entendo o entusiasmo."));
+        ReviewReply resposta = reviewReplyRepository.save(new ReviewReply(
+                alvo, demo, raiz, "@critica o que te incomodou?"));
+        reviewReplyRepository.save(new ReviewReply(
+                alvo, critica, resposta, "A repeticao das side quests, principalmente."));
+    }
+
+    // Duas listas do demo: uma publica com tags e notas por jogo, outra privada.
+    //
+    // A privada existe pra deixar a regra de visibilidade observavel: aberta
+    // deslogado, a mesma URL responde 404.
+    private void semearListas(User demo, List<Game> games) {
+        GameList favoritos = new GameList(demo, "Valeram cada hora",
+                "Os que eu recomendaria pra qualquer pessoa, sem perguntar o que ela costuma jogar.");
+        favoritos.setTags(Set.of("favoritos", "pra comecar"));
+        favoritos.addItem(games.get(0), "Esse aqui e o motivo da lista existir.");
+        favoritos.addItem(games.get(1), null);
+        gameListRepository.save(favoritos);
+
+        GameList privada = new GameList(demo, "Comprar quando baixar",
+                "Lista de espera de promocao.");
+        privada.setTags(Set.of("promocao"));
+        privada.setVisibility(ListVisibility.PRIVATE);
+        privada.addItem(games.get(2), null);
+        gameListRepository.save(privada);
     }
 
     // Lista de reserva, usada so se a API externa nao responder. O primeiro
