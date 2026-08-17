@@ -41,7 +41,18 @@ export default function Navbar() {
             <>
               {/* So pra quem esta logado: recomendacao depende de saber quem e a pessoa */}
               <NavLink to="/recommendations" className={link}>Recomendados</NavLink>
-              <NavLink to={`/users/${username}`} className={link}>{username}</NavLink>
+              {/* "Perfil" em vez do username. O nome da conta ali dizia duas
+                  coisas de uma vez - pra onde o link vai e quem esta logado - e
+                  fazia a pior das duas: virava um item de menu que muda de
+                  largura conforme quem entrou, e "demo" no meio de "Catálogo" e
+                  "Recomendados" nao parece navegacao, parece dado solto.
+
+                  O title mantem a informacao de QUEM esta logado, que continua
+                  disponivel a um hover - e sem hover nenhum, a pagina de destino
+                  abre com o @nome no topo. */}
+              <NavLink to={`/users/${username}`} className={link} title={`Perfil de @${username}`}>
+                Perfil
+              </NavLink>
               <button onClick={handleLogout} className="text-sm font-medium text-slate hover:text-ink transition-colors cursor-pointer">
                 Sair
               </button>
