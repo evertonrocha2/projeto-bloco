@@ -162,6 +162,35 @@ h2, h3 {
 .js-reveal [data-reveal-group].is-revealed > *:nth-child(8)  { transition-delay: 0.35s; }
 .js-reveal [data-reveal-group].is-revealed > *:nth-child(n+9) { transition-delay: 0.40s; }
 
+/* O painel do select (ui/select.jsx) entra deslizando 4px de cima, junto com a
+   opacidade. O deslocamento e curto de proposito: o painel deve parecer que
+   SAIU do campo, e nao que voou de algum outro lugar da tela.
+
+   So a entrada e animada. A saida exigiria manter o painel montado durante a
+   transicao, e um painel que depende de um temporizador pra sumir e um painel
+   que pode ficar preso na tela se o temporizador nao rodar - defeito pior do
+   que a ausencia da animacao. */
+@keyframes select-panel-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.select-panel {
+  animation: select-panel-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Quando nao ha espaco embaixo, o painel abre PRA CIMA - e entao o deslize tem
+   que vir de baixo. Manter a animacao de descida nesse caso faria o painel
+   nascer sobreposto ao campo e recuar, que le como erro de desenho. */
+@keyframes select-panel-in-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.select-panel-up {
+  animation-name: select-panel-in-up;
+}
+
 /* Barra de progresso da rolagem, no topo. Anima por transform (scaleX), que o
    navegador resolve na GPU - animar "width" forcaria recalculo de layout a cada
    quadro. */

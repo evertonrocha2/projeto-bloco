@@ -7,10 +7,15 @@ import { parseGenres } from '@/lib/genres.js'
 import StarRating from '@/ui/star-rating.jsx'
 import GameCover from '@/ui/game-cover.jsx'
 import Spinner from '@/ui/spinner.jsx'
+import Select from '@/ui/select.jsx'
 import { btnPrimary, btnGhost, field, card } from '@/lib/ui.js'
 import { COLLECTION_STATUSES, DEFAULT_STATUS } from '@/lib/collection-status.js'
 
 const wrap = 'max-w-5xl mx-auto px-6 py-12'
+
+// O Select fala em {value, label}; o modulo de status fala em {code, label}.
+// A conversao acontece uma vez, fora do componente, e nao a cada renderizacao.
+const STATUS_OPTIONS = COLLECTION_STATUSES.map(({ code, label }) => ({ value: code, label }))
 
 export default function GameDetailPage() {
   const { id } = useParams()
@@ -112,11 +117,12 @@ export default function GameDetailPage() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-ink">Status</label>
-            <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${field} w-48`}>
-              {COLLECTION_STATUSES.map(({ code, label }) => (
-                <option key={code} value={code}>{label}</option>
-              ))}
-            </select>
+            <Select
+              value={status}
+              onChange={setStatus}
+              options={STATUS_OPTIONS}
+              className="w-48"
+            />
           </div>
           <button type="submit" className={btnPrimary}>
             {collDone ? <Check size={18} /> : <Plus size={18} />}

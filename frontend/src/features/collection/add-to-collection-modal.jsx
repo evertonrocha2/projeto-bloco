@@ -3,7 +3,11 @@ import { X, Search, Check } from 'lucide-react'
 import { api } from '@/lib/api'
 import { btnPrimary, field } from '@/lib/ui.js'
 import GameCover from '@/ui/game-cover.jsx'
+import Select from '@/ui/select.jsx'
 import { COLLECTION_STATUSES, DEFAULT_STATUS } from '@/lib/collection-status.js'
+
+// Mesma conversao {code,label} -> {value,label} da tela de detalhe do jogo.
+const STATUS_OPTIONS = COLLECTION_STATUSES.map(({ code, label }) => ({ value: code, label }))
 
 // Popup pra adicionar um jogo na colecao. O fluxo: a pessoa busca/filtra pelo
 // nome, escolhe um jogo da lista, define horas e status, e confirma. Nada e
@@ -110,11 +114,7 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-slate">Status</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${field} w-40`}>
-                {COLLECTION_STATUSES.map(({ code, label }) => (
-                  <option key={code} value={code}>{label}</option>
-                ))}
-              </select>
+              <Select value={status} onChange={setStatus} options={STATUS_OPTIONS} className="w-40" />
             </div>
             <button onClick={handleAdd} disabled={saving} className={`${btnPrimary} !py-2.5`}>
               {saving ? 'Adicionando...' : 'Adicionar'}
