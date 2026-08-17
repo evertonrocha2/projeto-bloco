@@ -6,18 +6,36 @@
     <meta name="description" content="GameLog - registre, avalie e descubra jogos." />
     <title>GAMELOG // sua estante de jogos</title>
 
-    <!-- Duas fontes, com papeis distintos:
-         - Chakra Petch nos titulos e nos micro-rotulos maiusculos. E uma
-           grotesca tecnica de cortes retos e angulos marcados, que conversa com os
-           cantos vivos da interface sem virar fonte de fantasia.
-         - DM Sans no corpo: geometrica e limpa, legivel em texto corrido.
+    <!-- Sistema de quatro fontes do Google Fonts, uma por papel:
+         - Prosto One  : os h1. Display largo, feita pra corpo grande.
+         - Silkscreen  : micro-rotulos. Pixel font, so funciona em corpo pequeno.
+         - Silkscreen  : micro-rotulos e pontuacao. Pixel font - so funciona em
+                         corpo pequeno, e e ela que da o ar retro-gamer.
+         - DM Sans     : texto corrido.
+         As tres primeiras foram conferidas: tem TODOS os acentos do portugues.
          Se nao carregarem (sem internet), cai pra fonte do sistema. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Prosto+One&family=Silkscreen:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400&display=swap"
       rel="stylesheet"
     />
+
+    <!-- BBH Sans Bartle e usada SO na marca "GameLog". A fonte nao tem nenhum
+         caractere acentuado (121 glifos, ASCII apenas), entao em texto em
+         portugues ela renderizaria com letras de outra fonte no meio das
+         palavras. Na marca, que e ASCII puro, isso nao acontece.
+         Vem do Fontsource porque nao esta no Google Fonts. -->
+    <style>
+      @font-face {
+        font-family: 'BBH Sans Bartle';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url(https://cdn.jsdelivr.net/fontsource/fonts/bbh-sans-bartle@latest/latin-400-normal.woff2) format('woff2'),
+             url(https://cdn.jsdelivr.net/fontsource/fonts/bbh-sans-bartle@latest/latin-400-normal.woff) format('woff');
+      }
+    </style>
   </head>
   <body>
     <!-- O React monta a aplicacao inteira dentro dessa div -->
