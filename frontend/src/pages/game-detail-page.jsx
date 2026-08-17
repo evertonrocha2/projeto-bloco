@@ -8,6 +8,7 @@ import StarRating from '@/ui/star-rating.jsx'
 import GameCover from '@/ui/game-cover.jsx'
 import Spinner from '@/ui/spinner.jsx'
 import Select from '@/ui/select.jsx'
+import ReviewItem from '@/features/reviews/review-item.jsx'
 import { btnPrimary, btnGhost, field, card } from '@/lib/ui.js'
 import { COLLECTION_STATUSES, DEFAULT_STATUS } from '@/lib/collection-status.js'
 
@@ -19,7 +20,7 @@ const STATUS_OPTIONS = COLLECTION_STATUSES.map(({ code, label }) => ({ value: co
 
 export default function GameDetailPage() {
   const { id } = useParams()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, username } = useAuth()
 
   const [game, setGame] = useState(null)
   const [error, setError] = useState(null)
@@ -163,13 +164,7 @@ export default function GameDetailPage() {
 
       <ul className="flex flex-col gap-3">
         {game.reviews.map((review) => (
-          <li key={review.id} className={`${card} p-5`}>
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <Link to={`/users/${review.username}`} className="font-semibold text-ink hover:text-accent">@{review.username}</Link>
-              <StarRating value={review.rating} />
-            </div>
-            <p className="text-slate leading-relaxed">{review.text}</p>
-          </li>
+          <ReviewItem key={review.id} review={review} currentUser={username} />
         ))}
       </ul>
     </div>

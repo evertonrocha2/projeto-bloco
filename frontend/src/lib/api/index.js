@@ -1,7 +1,9 @@
 import { authApi } from './auth.js'
 import { collectionApi } from './collection.js'
 import { gamesApi } from './games.js'
+import { listsApi } from './lists.js'
 import { recommendationsApi } from './recommendations.js'
+import { socialApi } from './social.js'
 import { usersApi } from './users.js'
 
 export { getToken } from './client.js'
@@ -17,5 +19,7 @@ export const api = {
   ...gamesApi,
   ...usersApi,
   ...collectionApi,
+  ...listsApi,
+  ...socialApi,
   ...recommendationsApi,
 }
