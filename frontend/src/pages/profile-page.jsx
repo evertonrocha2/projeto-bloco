@@ -61,11 +61,11 @@ export default function ProfilePage() {
   return (
     <div className={wrap}>
       <header className="flex flex-wrap items-center gap-5 mb-10">
-        <span className="grid place-items-center h-16 w-16 shrink-0 bg-accent text-canvas font-display font-bold text-2xl">
+        <span className="grid place-items-center h-16 w-16 shrink-0 bg-accent text-canvas font-display text-2xl">
           {profile.username.charAt(0).toUpperCase()}
         </span>
         <div>
-          <h1 className="font-display font-bold text-2xl text-ink">@{profile.username}</h1>
+          <h1 className="text-2xl text-ink">@{profile.username}</h1>
           {profile.bio && <p className="text-slate text-sm mt-0.5">{profile.bio}</p>}
           <p className="text-xs text-slate/80 mt-1">Membro desde {memberSince}</p>
         </div>
@@ -84,7 +84,9 @@ export default function ProfilePage() {
             {profile.reviews.map((review) => (
               <li key={review.id} className={`${card} p-4 flex gap-4`}>
                 <Link to={`/games/${review.gameId}`} className="shrink-0">
-                  <GameCover game={{ title: review.gameTitle, coverUrl: review.gameCoverUrl }} className="h-16 w-24 border border-line shrink-0" />
+                  <span className="block h-20 w-14 shrink-0 overflow-hidden border border-line">
+                    <GameCover game={{ title: review.gameTitle, coverUrl: review.gameCoverUrl }} className="h-full" />
+                  </span>
                 </Link>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-3 mb-1">
@@ -122,7 +124,7 @@ export default function ProfilePage() {
                 >
                   <GameCover game={{ title: entry.gameTitle, coverUrl: entry.gameCoverUrl }} className="aspect-[3/4] transition-transform duration-700 group-hover:scale-105" />
                   <div className="p-3.5">
-                    <h3 className="font-display font-bold text-sm text-ink leading-tight truncate" title={entry.gameTitle}>{entry.gameTitle}</h3>
+                    <h3 className="font-display text-sm text-ink leading-tight truncate" title={entry.gameTitle}>{entry.gameTitle}</h3>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-xs font-semibold text-accent bg-accent-soft px-2.5 py-0.5">{entry.status}</span>
                       <span className="inline-flex items-center gap-1 text-xs text-slate">

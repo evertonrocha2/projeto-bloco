@@ -52,7 +52,7 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-line">
-          <h3 className="font-display font-bold text-lg text-ink">Adicionar jogo à coleção</h3>
+          <h3 className="font-display text-lg text-ink">Adicionar jogo à coleção</h3>
           <button onClick={onClose} className="text-slate hover:text-ink cursor-pointer"><X size={20} /></button>
         </div>
 
@@ -84,7 +84,12 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
                   (active ? 'bg-accent-soft' : 'hover:bg-mist')
                 }
               >
-                <GameCover game={game} className="h-10 w-16 border border-line shrink-0" />
+                {/* Contêiner de tamanho fixo com a capa preenchendo por dentro. O GameCover
+                    traz w-full na base, então passar w-16 direto nele deixava as duas
+                    larguras competindo e a capa saía esticada na linha inteira. */}
+                <span className="block h-14 w-10 shrink-0 overflow-hidden border border-line">
+                  <GameCover game={game} className="h-full" />
+                </span>
                 <span className="flex-1 min-w-0">
                   <span className="block text-sm font-semibold text-ink truncate">{game.title}</span>
                   <span className="block text-xs text-slate truncate">{game.genre}</span>

@@ -27,7 +27,7 @@ export default function GameCover({ game, className = '', sizes }) {
         aria-label={game?.title ? `${game.title} — sem capa disponível` : 'Sem capa disponível'}
       >
         <span className="block h-px w-8 bg-accent" aria-hidden="true" />
-        <span className="font-display font-semibold text-ink leading-tight line-clamp-3">
+        <span className="font-display text-ink leading-tight line-clamp-3">
           {game?.title}
         </span>
         <span className="eyebrow">sem capa</span>

@@ -107,7 +107,7 @@ export default function LandingPage() {
         <div className={`${wrap} py-28 sm:py-36 w-full`}>
           <div className="hero-stagger max-w-3xl">
             <p className="eyebrow">catálogo · avaliações · coleção</p>
-            <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
               Você já esqueceu<br />metade do que jogou.
             </h1>
             <p className="text-lg text-slate mt-7 max-w-xl leading-relaxed">
@@ -178,7 +178,7 @@ export default function LandingPage() {
               key={label}
               className="flex flex-col items-center justify-center text-center py-12 px-4 border-b sm:border-b-0 sm:border-r border-line last:border-r-0 last:border-b-0"
             >
-              <div className="font-display font-bold text-5xl sm:text-6xl text-accent tabular-nums leading-none">
+              <div className="font-display text-5xl sm:text-6xl text-accent tabular-nums leading-none">
                 {valor}
               </div>
               <div className="eyebrow mt-3">{label}</div>
@@ -194,7 +194,7 @@ export default function LandingPage() {
       <section className={`${wrap} py-24`}>
         <div className="max-w-2xl" data-reveal>
           <p className="eyebrow">como funciona</p>
-          <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
+          <h2 className="font-display text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
             Três passos e pronto.
           </h2>
         </div>
@@ -206,10 +206,10 @@ export default function LandingPage() {
             ['Descubra', 'A partir daí o sistema aprende seu gosto e passa a indicar o que você ainda não jogou.'],
           ].map(([titulo, texto], indice) => (
             <li key={titulo} className="p-8 border-r border-b border-line">
-              <span className="font-display font-bold text-5xl text-accent/25 tabular-nums leading-none">
+              <span className="font-display text-5xl text-accent/25 tabular-nums leading-none">
                 {String(indice + 1).padStart(2, '0')}
               </span>
-              <h3 className="font-display font-bold text-xl text-ink mt-5">{titulo}</h3>
+              <h3 className="font-display text-xl text-ink mt-5">{titulo}</h3>
               <p className="text-slate text-sm mt-2 leading-relaxed">{texto}</p>
             </li>
           ))}
@@ -225,7 +225,7 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-[1fr_1.2fr] gap-14">
             <div data-reveal>
               <p className="eyebrow">sem caixa preta</p>
-              <h2 className="font-display font-bold text-4xl text-ink leading-[1.05] mt-4">
+              <h2 className="font-display text-4xl text-ink leading-[1.05] mt-4">
                 Você vê a conta.
               </h2>
               <p className="text-slate mt-5 leading-relaxed">
@@ -271,7 +271,7 @@ export default function LandingPage() {
         <div className={`${wrap} py-24`}>
           <div className="max-w-2xl" data-reveal>
             <p className="eyebrow">o que dá pra fazer</p>
-            <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
+            <h2 className="font-display text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
               Seis coisas. Bem feitas.
             </h2>
             <p className="text-lg text-slate mt-5 leading-relaxed">
@@ -289,7 +289,7 @@ export default function LandingPage() {
                   <Icon size={22} className="text-accent" />
                   <span className="eyebrow tabular-nums">{String(index + 1).padStart(2, '0')}</span>
                 </div>
-                <h3 className="font-display font-bold text-xl text-ink mt-6">{title}</h3>
+                <h3 className="font-display text-xl text-ink mt-6">{title}</h3>
                 <p className="text-slate text-sm mt-2 leading-relaxed">{desc}</p>
               </div>
             ))}
@@ -302,7 +302,7 @@ export default function LandingPage() {
         <div className="grid lg:grid-cols-[1fr_1.5fr] gap-12" data-reveal>
           <div>
             <p className="eyebrow">por que registrar</p>
-            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
+            <h2 className="font-display text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
               A gente joga muito e esquece quase tudo.
             </h2>
           </div>
@@ -356,7 +356,7 @@ export default function LandingPage() {
         <div className={`${wrap} relative py-32 sm:py-40`} data-reveal>
           <div className="max-w-2xl">
             <p className="eyebrow">o catálogo</p>
-            <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
+            <h2 className="font-display text-4xl sm:text-5xl text-ink leading-[1.05] mt-4">
               Tem mais jogo aí fora do que você consegue jogar.
             </h2>
             <p className="text-lg text-slate mt-6 leading-relaxed">
@@ -409,12 +409,12 @@ export default function LandingPage() {
                 />
                 <div className="max-w-xl">
                   <p className="eyebrow">o mais bem avaliado</p>
-                  <h2 className="font-display font-bold text-4xl sm:text-5xl text-ink mt-4 leading-[1.03]">
+                  <h2 className="font-display text-4xl sm:text-5xl text-ink mt-4 leading-[1.03]">
                     {topRated.title}
                   </h2>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-5">
                     <StarRating value={Math.round(topRated.averageRating)} size={18} />
-                    <span className="font-display font-bold text-ink tabular-nums">
+                    <span className="font-display text-ink tabular-nums">
                       {topRated.averageRating.toFixed(1)}
                     </span>
                     <span className="text-slate text-sm">
@@ -443,7 +443,7 @@ export default function LandingPage() {
           <div className="flex items-end justify-between mb-10" data-reveal>
             <div>
               <p className="eyebrow">em alta</p>
-              <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-3">
+              <h2 className="font-display text-3xl sm:text-4xl text-ink mt-3">
                 O que está sendo jogado
               </h2>
             </div>
@@ -462,7 +462,7 @@ export default function LandingPage() {
         <div className={`${wrap} py-24`}>
           <div className="max-w-2xl" data-reveal>
             <p className="eyebrow">quem usa</p>
-            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
+            <h2 className="font-display text-3xl sm:text-4xl text-ink mt-4 leading-[1.08]">
               Três pessoas que pararam de esquecer.
             </h2>
           </div>
@@ -474,7 +474,7 @@ export default function LandingPage() {
                   {quote}
                 </blockquote>
                 <figcaption className="flex items-center gap-3 mt-7">
-                  <span className="grid place-items-center h-8 w-8 bg-accent-soft text-accent font-display font-bold text-sm border border-line">
+                  <span className="grid place-items-center h-8 w-8 bg-accent-soft text-accent font-display text-sm border border-line">
                     {name.charAt(0)}
                   </span>
                   <span className="eyebrow">{name}</span>
@@ -490,7 +490,7 @@ export default function LandingPage() {
         <section className={`${wrap} py-24`}>
           <div data-reveal>
             <p className="eyebrow">navegue por gênero</p>
-            <h2 className="font-display font-bold text-3xl sm:text-4xl text-ink mt-4 max-w-xl leading-[1.08]">
+            <h2 className="font-display text-3xl sm:text-4xl text-ink mt-4 max-w-xl leading-[1.08]">
               Comece por algo que você já gosta.
             </h2>
             <div className="flex flex-wrap gap-2 mt-9">
@@ -533,7 +533,7 @@ export default function LandingPage() {
 
           <div className={`${wrap} relative py-32 sm:py-40 text-center`} data-reveal>
             <p className="eyebrow">leva um minuto</p>
-            <h2 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
+            <h2 className="font-display text-5xl sm:text-6xl md:text-7xl text-ink leading-[0.98] mt-6">
               Comece a<br />registrar hoje.
             </h2>
             <p className="text-lg text-slate mt-7 max-w-lg mx-auto leading-relaxed">

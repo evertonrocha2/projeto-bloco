@@ -25,7 +25,7 @@ export default function GameCard({ game, onQuickAdd }) {
           </span>
         </div>
         <div className="p-4 border-t border-line">
-          <h3 className="font-display font-semibold text-ink leading-tight truncate" title={game.title}>
+          <h3 className="font-display text-ink leading-tight truncate" title={game.title}>
             {game.title}
           </h3>
           <div className="flex items-center gap-2 mt-2">

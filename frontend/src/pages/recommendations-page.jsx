@@ -103,7 +103,7 @@ export default function RecommendationsPage() {
           <span className="grid place-items-center h-12 w-12 bg-accent/10 text-accent mx-auto">
             <Sparkles size={22} />
           </span>
-          <h1 className="font-display font-bold text-2xl text-ink mt-4">
+          <h1 className="text-2xl text-ink mt-4">
             Recomendações são pessoais
           </h1>
           <p className="text-slate mt-2">
@@ -148,7 +148,7 @@ export default function RecommendationsPage() {
                 {/* Deixa visivel se os dados vieram de um calculo novo ou do lote salvo */}
                 {data && <ServiceStatusBadge stale={data.stale} />}
               </div>
-              <h1 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.02] mt-4">
+              <h1 className="text-4xl sm:text-5xl text-ink leading-[1.02] mt-4">
                 O que jogar depois
               </h1>
               <p className="text-slate mt-4 max-w-lg leading-relaxed">
@@ -184,7 +184,7 @@ export default function RecommendationsPage() {
           {data?.items?.length === 0 ? (
             <div className={`${card} p-8`}>
               <p className="eyebrow">sem indicações</p>
-              <h2 className="font-display font-bold text-xl text-ink mt-2">Você zerou o catálogo</h2>
+              <h2 className="font-display text-xl text-ink mt-2">Você zerou o catálogo</h2>
               <p className="text-slate mt-2 leading-relaxed">
                 {data.stale
                   ? 'Não foi possível falar com o catálogo e não há um cálculo anterior salvo. Tente recalcular em instantes.'

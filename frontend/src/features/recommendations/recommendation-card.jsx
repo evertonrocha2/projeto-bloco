@@ -28,7 +28,7 @@ export default function RecommendationCard({ item, onFeedback, busy }) {
 
           {/* Pontuacao: maximo teorico 5.0 (3.0 de genero + 2.0 de comunidade) */}
           <div className="absolute bottom-0 left-0 flex items-baseline gap-1 px-2 py-0.5 bg-canvas/90 border-t border-r border-line backdrop-blur">
-            <span className="font-display font-bold text-sm leading-none text-accent tabular-nums">
+            <span className="font-display text-sm leading-none text-accent tabular-nums">
               {item.score.toFixed(2)}
             </span>
             <span className="text-[0.65rem] text-slate leading-none">/5</span>
@@ -37,7 +37,7 @@ export default function RecommendationCard({ item, onFeedback, busy }) {
 
         <div className="p-3 border-t border-line">
           <h3
-            className="font-display font-semibold text-sm text-ink leading-tight truncate"
+            className="font-display text-sm text-ink leading-tight truncate"
             title={item.gameTitle}
           >
             {item.gameTitle}

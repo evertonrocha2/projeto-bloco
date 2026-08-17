@@ -85,7 +85,7 @@ export default function GameDetailPage() {
       <header className="grid md:grid-cols-[300px_1fr] gap-8 items-start">
         <GameCover game={game} className="aspect-[3/4] border border-line" />
         <div>
-          <h1 className="font-display font-bold text-4xl text-ink leading-tight">{game.title}</h1>
+          <h1 className="text-4xl text-ink leading-tight">{game.title}</h1>
           <p className="text-slate mt-1">{game.releaseYear || 's/ data'}</p>
           <div className="flex items-center gap-2 mt-3">
             <StarRating value={Math.round(game.averageRating)} size={18} />
@@ -124,7 +124,7 @@ export default function GameDetailPage() {
       )}
 
       {/* avaliacoes */}
-      <h2 className="font-display font-bold text-2xl text-ink mt-12 mb-5">
+      <h2 className="font-display text-2xl text-ink mt-12 mb-5">
         Avaliações {game.reviewCount > 0 && <span className="text-slate font-medium">({game.reviewCount})</span>}
       </h2>
 

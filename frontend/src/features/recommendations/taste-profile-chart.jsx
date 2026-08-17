@@ -14,7 +14,7 @@ export default function TasteProfileChart({ genres }) {
     return (
       <div className={`${card} p-5`}>
         <p className="eyebrow">seu perfil</p>
-        <h2 className="font-display font-semibold text-ink mt-2">Ainda sem leitura</h2>
+        <h2 className="font-display text-ink mt-2">Ainda sem leitura</h2>
         <p className="text-sm text-slate mt-2 leading-relaxed">
           Avalie alguns jogos pra gente entender o que você curte. Enquanto isso, as
           indicações vêm da nota da comunidade.
@@ -30,7 +30,7 @@ export default function TasteProfileChart({ genres }) {
   return (
     <div className={`${card} p-5`}>
       <p className="eyebrow">seu perfil</p>
-      <h2 className="font-display font-semibold text-ink mt-2">Gêneros que te definem</h2>
+      <h2 className="font-display text-ink mt-2">Gêneros que te definem</h2>
       <p className="text-sm text-slate mt-1 mb-5 leading-relaxed">
         Calculado a partir das suas avaliações e da sua coleção.
       </p>
