@@ -87,7 +87,7 @@ public class DataSeeder implements CommandLineRunner {
                 "demo",
                 "demo@gamelog.com",
                 passwordEncoder.encode("demo123"),
-                "So um jogador que gosta de comentar sobre jogos."
+                "Só mais um jogador que gosta de comentar sobre o que joga."
         ));
 
         // Segunda pessoa. Existe pra camada social ter com quem conversar: voto e
@@ -104,14 +104,14 @@ public class DataSeeder implements CommandLineRunner {
         // So cria se tiver jogos suficientes (a API pode variar a quantidade).
         if (games.size() >= 3) {
             Review primeira = reviewRepository.save(new Review(demo, games.get(0), 5,
-                    "Joguei muito mais do que eu esperava. Recomendo demais."));
+                    "Entrei pra jogar uma hora e perdi o fim de semana. Recomendo sem ressalvas."));
             reviewRepository.saveAll(List.of(
                     new Review(demo, games.get(1), 4,
-                            "Bem divertido, mas precisa de um tempo pra pegar o jeito."),
+                            "Muito bom depois que engrena, mas as primeiras horas testam a paciência."),
                     new Review(demo, games.get(2), 3,
-                            "Passa o tempo, mas nada que vai mudar sua vida."),
+                            "Passa o tempo. Não é ruim, só não fica."),
                     new Review(critica, games.get(0), 3,
-                            "Bonito, mas repetitivo depois da terceira regiao.")
+                            "Bonito, mas repetitivo depois da terceira região.")
             ));
 
             // Tambem ja deixa alguns jogos na colecao do demo, com horas e status.
@@ -140,7 +140,7 @@ public class DataSeeder implements CommandLineRunner {
         ReviewReply resposta = reviewReplyRepository.save(new ReviewReply(
                 alvo, demo, raiz, "@critica o que te incomodou?"));
         reviewReplyRepository.save(new ReviewReply(
-                alvo, critica, resposta, "A repeticao das side quests, principalmente."));
+                alvo, critica, resposta, "A repetição das side quests, principalmente."));
     }
 
     // Duas listas do demo: uma publica com tags e notas por jogo, outra privada.
@@ -150,14 +150,14 @@ public class DataSeeder implements CommandLineRunner {
     private void semearListas(User demo, List<Game> games) {
         GameList favoritos = new GameList(demo, "Valeram cada hora",
                 "Os que eu recomendaria pra qualquer pessoa, sem perguntar o que ela costuma jogar.");
-        favoritos.setTags(Set.of("favoritos", "pra comecar"));
-        favoritos.addItem(games.get(0), "Esse aqui e o motivo da lista existir.");
+        favoritos.setTags(Set.of("favoritos", "pra começar"));
+        favoritos.addItem(games.get(0), "Esse aqui é o motivo da lista existir.");
         favoritos.addItem(games.get(1), null);
         gameListRepository.save(favoritos);
 
         GameList privada = new GameList(demo, "Comprar quando baixar",
-                "Lista de espera de promocao.");
-        privada.setTags(Set.of("promocao"));
+                "Lista de espera de promoção.");
+        privada.setTags(Set.of("promoção"));
         privada.setVisibility(ListVisibility.PRIVATE);
         privada.addItem(games.get(2), null);
         gameListRepository.save(privada);
@@ -190,60 +190,65 @@ public class DataSeeder implements CommandLineRunner {
         return List.of(
                 // --- os tres primeiros sao os que o usuario demo avalia ---
                 new Game(null, "The Legend of Zelda: Breath of the Wild",
-                        "Um mundo aberto enorme onde voce explora do seu jeito.",
+                        "Um mundo aberto que não aponta o caminho: você escolhe uma direção e descobre o resto.",
                         2017, "Aventura",
                         "https://upload.wikimedia.org/wikipedia/en/c/c6/The_Legend_of_Zelda_Breath_of_the_Wild.jpg"),
                 new Game(null, "Elden Ring",
-                        "RPG de acao da FromSoftware num mundo aberto desafiador.",
-                        2022, "RPG de Acao",
+                        "A FromSoftware trocou os corredores por um mundo aberto, e não abriu mão de nada.",
+                        2022, "RPG de Ação",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/library_600x900.jpg"),
                 new Game(null, "Hades",
-                        "Roguelike onde voce tenta escapar do submundo grego.",
+                        "Você vai morrer muitas vezes escapando do submundo grego, e a história avança assim mesmo.",
                         2020, "Roguelike",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/library_600x900.jpg"),
 
                 // --- daqui pra baixo, os candidatos a recomendacao ---
-                // Compartilham "Aventura" e "RPG de Acao" com o que o demo curtiu,
-                // entao aparecem no topo das recomendacoes dele.
+                // Compartilham genero de aventura e de RPG de acao com o que o demo
+                // curtiu, entao aparecem no topo das recomendacoes dele.
+                //
+                // O comentario nao repete os valores entre aspas de proposito: os
+                // rotulos de genero sao texto de INTERFACE e levam acento, enquanto
+                // comentario neste projeto nao leva. Citar o literal aqui criaria
+                // duas grafias da mesma coisa, e a errada e a que parece certa.
                 new Game(null, "God of War",
-                        "Kratos e Atreus atravessam a mitologia nordica.",
-                        2018, "RPG de Acao, Aventura",
+                        "Kratos atravessa a mitologia nórdica com o filho a tiracolo, falando o mínimo possível.",
+                        2018, "RPG de Ação, Aventura",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/library_600x900.jpg"),
                 new Game(null, "The Witcher 3: Wild Hunt",
-                        "Geralt procura Ciri num mundo aberto cheio de escolhas.",
+                        "Geralt procura Ciri, e quase toda decisão no caminho cobra o preço algumas horas depois.",
                         2015, "RPG, Aventura",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/library_600x900.jpg"),
                 new Game(null, "Hollow Knight",
-                        "Metroidvania desenhado a mao num reino de insetos.",
+                        "Um reino de insetos desenhado à mão, onde entender o mapa já é metade da recompensa.",
                         2017, "Metroidvania, Aventura",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/367520/library_600x900.jpg"),
                 new Game(null, "Sekiro: Shadows Die Twice",
-                        "Acao com espadas e parry no Japao do periodo Sengoku.",
-                        2019, "RPG de Acao",
+                        "Japão do período Sengoku, e um combate que só abre depois que você aprende a aparar.",
+                        2019, "RPG de Ação",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/814380/library_600x900.jpg"),
 
                 // Genero proximo do que ele avaliou pior (Roguelike, nota 3):
                 // aparecem, mas mais embaixo.
                 new Game(null, "Dead Cells",
-                        "Roguelike de acao rapida onde morrer e parte do plano.",
+                        "Rápido e implacável: morrer faz parte do plano, e cada corrida devolve alguma coisa.",
                         2018, "Roguelike, Metroidvania",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/588650/library_600x900.jpg"),
                 new Game(null, "Slay the Spire",
-                        "Baralho de cartas que sobe uma torre, uma escolha por vez.",
+                        "Um baralho, uma torre e uma escolha por vez. Perder costuma ensinar mais que vencer.",
                         2019, "Roguelike, Cartas",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/646570/library_600x900.jpg"),
 
                 // Sem afinidade com o perfil do demo: servem de contraste no ranking.
                 new Game(null, "Celeste",
-                        "Plataforma dificil sobre subir uma montanha e a si mesmo.",
+                        "Uma montanha difícil de subir, e uma história sobre por que subir mesmo assim.",
                         2018, "Plataforma, Indie",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/504230/library_600x900.jpg"),
                 new Game(null, "Stardew Valley",
-                        "Voce herda uma fazenda e recomeca a vida no campo.",
-                        2016, "Simulacao, Indie",
+                        "Você herda uma fazenda caindo aos pedaços e recomeça a vida no interior.",
+                        2016, "Simulação, Indie",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/413150/library_600x900.jpg"),
                 new Game(null, "Disco Elysium",
-                        "RPG de detetive onde a conversa e o combate.",
+                        "Um RPG de detetive em que a conversa é o combate, e a sua própria cabeça é o inimigo.",
                         2019, "RPG",
                         "https://cdn.cloudflare.steamstatic.com/steam/apps/632470/library_600x900.jpg")
         );
