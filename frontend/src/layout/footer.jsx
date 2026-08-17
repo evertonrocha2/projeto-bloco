@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="bg-mist border-t border-line mt-auto">
       <div className="max-w-6xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
         <div>
-          <div className="flex items-center gap-2 font-display font-bold text-xl text-ink">
+          <div className="flex items-center gap-2 brand text-base text-ink">
             <span className="grid place-items-center h-8 w-8 bg-accent text-canvas">
               <Gamepad2 size={18} />
             </span>
@@ -20,7 +20,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="font-display font-bold text-sm text-ink mb-3">Navegação</h4>
+          <h4 className="font-display text-sm text-ink mb-3">Navegação</h4>
           <ul className="space-y-2 text-sm text-slate">
             <li><Link to="/games" className="hover:text-ink transition">Catálogo</Link></li>
             <li><Link to="/login" className="hover:text-ink transition">Entrar</Link></li>
@@ -29,7 +29,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="font-display font-bold text-sm text-ink mb-3">Projeto</h4>
+          <h4 className="font-display text-sm text-ink mb-3">Projeto</h4>
           <ul className="space-y-2 text-sm text-slate">
             <li>
               <a href="https://github.com/evertonrocha2/projeto-bloco-01" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 hover:text-ink transition">

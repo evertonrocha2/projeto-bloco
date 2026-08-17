@@ -34,10 +34,10 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
       <header className="relative px-6 sm:px-10 py-7">
         <Link
           to="/"
-          className="group inline-flex items-center gap-2.5 font-display font-bold text-xl text-ink tracking-tight"
+          className="group inline-flex items-center gap-2.5 font-display text-xl text-ink tracking-tight"
         >
-          <span className="grid place-items-center h-8 w-8 bg-accent text-canvas transition-transform duration-300 group-hover:rotate-[-8deg]">
-            <Gamepad2 size={18} />
+          <span className="grid place-items-center h-7 w-7 bg-accent text-canvas transition-transform duration-300 group-hover:rotate-[-8deg]">
+            <Gamepad2 size={16} />
           </span>
           GameLog
         </Link>
@@ -51,7 +51,7 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
             passa sensacao de aperto. */}
         <div className="hero-stagger w-full max-w-2xl bg-canvas/55 backdrop-blur-2xl border border-line/80 p-8 sm:p-12">
           <p className="eyebrow">{eyebrow}</p>
-          <h1 className="font-display font-bold text-4xl sm:text-5xl text-ink leading-[1.03] mt-3">
+          <h1 className="text-4xl sm:text-5xl text-ink leading-[1.03] mt-3">
             {title}
           </h1>
           <p className="text-slate mt-3 leading-relaxed">{subtitle}</p>

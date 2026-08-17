@@ -27,10 +27,10 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link
           to="/"
-          className="group flex items-center gap-2.5 font-display font-bold text-xl text-ink tracking-tight"
+          className="group flex items-center gap-2 brand text-base text-ink"
         >
-          <span className="grid place-items-center h-8 w-8 bg-accent text-canvas transition-transform duration-300 group-hover:rotate-[-8deg]">
-            <Gamepad2 size={18} />
+          <span className="grid place-items-center h-7 w-7 bg-accent text-canvas transition-transform duration-300 group-hover:rotate-[-8deg]">
+            <Gamepad2 size={16} />
           </span>
           GameLog
         </Link>
