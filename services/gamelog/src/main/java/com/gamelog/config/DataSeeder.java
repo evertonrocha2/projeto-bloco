@@ -4,6 +4,7 @@ import com.gamelog.catalog.domain.Game;
 import com.gamelog.catalog.repository.GameRepository;
 import com.gamelog.catalog.service.GameImportService;
 import com.gamelog.collection.domain.CollectionEntry;
+import com.gamelog.collection.domain.CollectionStatus;
 import com.gamelog.collection.repository.CollectionRepository;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
@@ -85,9 +86,9 @@ public class DataSeeder implements CommandLineRunner {
 
             // Tambem ja deixa alguns jogos na colecao do demo, com horas e status.
             collectionRepository.saveAll(List.of(
-                    new CollectionEntry(demo, games.get(0), 120, "Zerado"),
-                    new CollectionEntry(demo, games.get(1), 45, "Jogando"),
-                    new CollectionEntry(demo, games.get(2), 0, "Quero jogar")
+                    new CollectionEntry(demo, games.get(0), 120, CollectionStatus.PLATINADO),
+                    new CollectionEntry(demo, games.get(1), 45, CollectionStatus.JOGANDO),
+                    new CollectionEntry(demo, games.get(2), 0, CollectionStatus.QUERO_JOGAR)
             ));
         }
     }
