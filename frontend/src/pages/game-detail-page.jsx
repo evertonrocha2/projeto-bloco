@@ -8,8 +8,8 @@ import StarRating from '@/ui/star-rating.jsx'
 import GameCover from '@/ui/game-cover.jsx'
 import Spinner from '@/ui/spinner.jsx'
 import { btnPrimary, btnGhost, field, card } from '@/lib/ui.js'
+import { COLLECTION_STATUSES, DEFAULT_STATUS } from '@/lib/collection-status.js'
 
-const STATUS_OPTIONS = ['Quero jogar', 'Jogando', 'Zerado', 'Largado']
 const wrap = 'max-w-5xl mx-auto px-6 py-12'
 
 export default function GameDetailPage() {
@@ -25,7 +25,8 @@ export default function GameDetailPage() {
   const [submitting, setSubmitting] = useState(false)
 
   const [hours, setHours] = useState(0)
-  const [status, setStatus] = useState(STATUS_OPTIONS[0])
+  // codigo do enum, nao rotulo: e o que a API aceita.
+  const [status, setStatus] = useState(DEFAULT_STATUS)
   const [collDone, setCollDone] = useState(false)
   const [collMsg, setCollMsg] = useState(null)
 
@@ -112,7 +113,9 @@ export default function GameDetailPage() {
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-ink">Status</label>
             <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${field} w-48`}>
-              {STATUS_OPTIONS.map((opcao) => <option key={opcao} value={opcao}>{opcao}</option>)}
+              {COLLECTION_STATUSES.map(({ code, label }) => (
+                <option key={code} value={code}>{label}</option>
+              ))}
             </select>
           </div>
           <button type="submit" className={btnPrimary}>

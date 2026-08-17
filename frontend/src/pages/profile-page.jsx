@@ -126,7 +126,9 @@ export default function ProfilePage() {
                   <div className="p-3.5">
                     <h3 className="font-display text-sm text-ink leading-tight truncate" title={entry.gameTitle}>{entry.gameTitle}</h3>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs font-semibold text-accent bg-accent-soft px-2.5 py-0.5">{entry.status}</span>
+                      {/* statusLabel vem pronto da API; entry.status e o codigo
+                          do enum e mostraria "QUERO_JOGAR" cru na tela. */}
+                      <span className="text-xs font-semibold text-accent bg-accent-soft px-2.5 py-0.5">{entry.statusLabel}</span>
                       <span className="inline-flex items-center gap-1 text-xs text-slate">
                         <Clock size={12} /> {entry.hoursPlayed}h
                       </span>
