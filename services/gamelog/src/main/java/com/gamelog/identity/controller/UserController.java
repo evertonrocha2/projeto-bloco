@@ -2,7 +2,9 @@ package com.gamelog.identity.controller;
 
 import com.gamelog.identity.dto.UpdateProfileRequest;
 import com.gamelog.identity.dto.UserProfileResponse;
+import com.gamelog.identity.dto.UserStatsResponse;
 import com.gamelog.identity.service.UserService;
+import com.gamelog.identity.service.UserStatsService;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final UserStatsService userStatsService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserStatsService userStatsService) {
         this.userService = userService;
+        this.userStatsService = userStatsService;
     }
 
     // Perfil publico de qualquer usuario - e isso que abre quando voce clica no
@@ -37,6 +41,16 @@ public class UserController {
     @GetMapping("/me")
     public UserProfileResponse getMe(Principal principal) {
         return userService.getProfile(principal.getName(), principal.getName());
+    }
+
+    // Os numeros do perfil: horas, jogos por status, genero favorito, nota media,
+    // conquistas e a retrospectiva do ano.
+    //
+    // Um endpoint so. A alternativa seria a tela abrir cinco requisicoes ao
+    // carregar, e as cinco leem as mesmas duas tabelas.
+    @GetMapping("/{username}/stats")
+    public UserStatsResponse getStats(@PathVariable String username) {
+        return userStatsService.forUser(username);
     }
 
     // Editar o proprio perfil: bio, avatar e capa.
