@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.gamelog.catalog.domain.Game;
 import com.gamelog.catalog.repository.GameRepository;
 import com.gamelog.collection.domain.CollectionEntry;
+import com.gamelog.collection.domain.CollectionStatus;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,14 +52,14 @@ class CollectionHistoryTest {
             User user = userRepository.save(new User("helena", "helena@email.com", "hash", null));
             Game game = gameRepository.save(new Game(501L, "Baldur's Gate 3", null, 2023, "RPG", "url"));
             return collectionRepository.save(
-                    new CollectionEntry(user, game, 0, "Quero jogar")).getId();
+                    new CollectionEntry(user, game, 0, CollectionStatus.QUERO_JOGAR)).getId();
         });
 
         // ...depois comeca a jogar...
         tx.executeWithoutResult(status -> {
             CollectionEntry entry = collectionRepository.findById(entryId).orElseThrow();
             entry.setHoursPlayed(30);
-            entry.setStatus("Jogando");
+            entry.setStatus(CollectionStatus.JOGANDO);
             collectionRepository.save(entry);
         });
 
@@ -66,7 +67,7 @@ class CollectionHistoryTest {
         tx.executeWithoutResult(status -> {
             CollectionEntry entry = collectionRepository.findById(entryId).orElseThrow();
             entry.setHoursPlayed(112);
-            entry.setStatus("Zerado");
+            entry.setStatus(CollectionStatus.ZERADO);
             collectionRepository.save(entry);
         });
 
@@ -78,7 +79,7 @@ class CollectionHistoryTest {
                 .map(r -> r.getEntity().getStatus())
                 .toList();
         assertThat(statusAoLongoDoTempo)
-                .containsExactly("Quero jogar", "Jogando", "Zerado");
+                .containsExactly(CollectionStatus.QUERO_JOGAR, CollectionStatus.JOGANDO, CollectionStatus.ZERADO);
 
         var horasAoLongoDoTempo = revisions.getContent().stream()
                 .map(r -> r.getEntity().getHoursPlayed())
@@ -87,6 +88,6 @@ class CollectionHistoryTest {
 
         // A revisao mais recente reflete o estado atual.
         var ultima = collectionRepository.findLastChangeRevision(entryId).orElseThrow();
-        assertThat(ultima.getEntity().getStatus()).isEqualTo("Zerado");
+        assertThat(ultima.getEntity().getStatus()).isEqualTo(CollectionStatus.ZERADO);
     }
 }

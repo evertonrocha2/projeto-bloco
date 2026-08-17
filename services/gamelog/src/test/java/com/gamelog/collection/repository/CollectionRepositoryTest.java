@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.gamelog.catalog.domain.Game;
 import com.gamelog.catalog.repository.GameRepository;
 import com.gamelog.collection.domain.CollectionEntry;
+import com.gamelog.collection.domain.CollectionStatus;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
 import java.util.List;
@@ -36,8 +37,8 @@ class CollectionRepositoryTest {
         hades = gameRepository.save(new Game(302L, "Hades", null, 2020, "Roguelike", "url"));
 
         collectionRepository.saveAll(List.of(
-                new CollectionEntry(davi, zelda, 120, "Zerado"),
-                new CollectionEntry(davi, hades, 10, "Jogando")
+                new CollectionEntry(davi, zelda, 120, CollectionStatus.ZERADO),
+                new CollectionEntry(davi, hades, 10, CollectionStatus.JOGANDO)
         ));
     }
 
@@ -56,7 +57,7 @@ class CollectionRepositoryTest {
 
         assertThat(item).isPresent();
         assertThat(item.get().getHoursPlayed()).isEqualTo(120);
-        assertThat(item.get().getStatus()).isEqualTo("Zerado");
+        assertThat(item.get().getStatus()).isEqualTo(CollectionStatus.ZERADO);
     }
 
     // --- Projecao usada pelo microsservico de recomendacoes (TP3) ---
@@ -83,7 +84,7 @@ class CollectionRepositoryTest {
                 .orElseThrow();
 
         item.setHoursPlayed(35);
-        item.setStatus("Zerado");
+        item.setStatus(CollectionStatus.ZERADO);
         collectionRepository.saveAndFlush(item);
 
         assertThat(collectionRepository.findByUserIdOrderByCreatedAtDesc(davi.getId())).hasSize(2);

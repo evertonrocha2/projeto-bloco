@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.gamelog.catalog.domain.Game;
 import com.gamelog.catalog.repository.GameRepository;
 import com.gamelog.collection.domain.CollectionEntry;
+import com.gamelog.collection.domain.CollectionStatus;
 import com.gamelog.collection.repository.CollectionRepository;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
@@ -64,7 +65,7 @@ class GameActivityEndpointTest {
                 new Review(ana, zelda, 5, "obra prima"),
                 new Review(ana, hades, 4, "viciante")
         ));
-        collectionRepository.save(new CollectionEntry(ana, zelda, 120, "Zerado"));
+        collectionRepository.save(new CollectionEntry(ana, zelda, 120, CollectionStatus.ZERADO));
 
         GameActivityService service =
                 new GameActivityService(userRepository, reviewRepository, collectionRepository);
