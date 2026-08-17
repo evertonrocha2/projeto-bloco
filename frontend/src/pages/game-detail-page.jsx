@@ -35,6 +35,7 @@ export default function GameDetailPage() {
   const [status, setStatus] = useState(DEFAULT_STATUS)
   const [collDone, setCollDone] = useState(false)
   const [collMsg, setCollMsg] = useState(null)
+  const [celebrating, setCelebrating] = useState(false)
 
   function loadGame() {
     api.getGame(id).then(setGame).catch((erro) => setError(erro.message))
@@ -72,6 +73,14 @@ export default function GameDetailPage() {
       await api.addToCollection({ gameId: Number(id), hoursPlayed: Number(hours), status })
       setCollDone(true)
       setCollMsg('Salvo na sua coleção.')
+
+      // A celebracao acontece no MOMENTO de platinar, e nunca ao carregar a
+      // pagina. Uma animacao que toca toda vez que a tela abre deixa de ser
+      // comemoracao e vira ruido - e some justamente a diferenca entre "voce
+      // acabou de conseguir" e "voce conseguiu algum dia".
+      if (status === 'PLATINADO') {
+        setCelebrating(true)
+      }
     } catch (err) {
       setCollMsg(err.message)
     }
@@ -90,7 +99,15 @@ export default function GameDetailPage() {
 
       {/* cabecalho */}
       <header className="grid md:grid-cols-[300px_1fr] gap-8 items-start">
-        <GameCover game={game} className="aspect-[3/4] border border-line" />
+        {/* A varredura ambar da platina passa por cima da capa. onAnimationEnd
+            desarma o estado, entao ela toca UMA vez - e voltar a platinar o
+            mesmo jogo dispara de novo, que e o comportamento esperado. */}
+        <div
+          className={'relative overflow-hidden' + (celebrating ? ' platinum-sweep' : '')}
+          onAnimationEnd={() => setCelebrating(false)}
+        >
+          <GameCover game={game} className="aspect-[3/4] border border-line" />
+        </div>
         <div>
           <h1 className="text-4xl text-ink leading-tight">{game.title}</h1>
           <p className="text-slate mt-1">{game.releaseYear || 's/ data'}</p>

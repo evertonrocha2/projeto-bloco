@@ -6,6 +6,8 @@ import LandingPage from '@/pages/landing-page.jsx'
 import GamesPage from '@/pages/games-page.jsx'
 import GameDetailPage from '@/pages/game-detail-page.jsx'
 import ProfilePage from '@/pages/profile-page.jsx'
+import ListsPage from '@/pages/lists-page.jsx'
+import ListDetailPage from '@/pages/list-detail-page.jsx'
 import RecommendationsPage from '@/pages/recommendations-page.jsx'
 import LoginPage from '@/pages/login-page.jsx'
 import RegisterPage from '@/pages/register-page.jsx'
@@ -32,6 +34,10 @@ export default function App() {
           <Route path="/games/:id" element={<GameDetailPage />} />
           {/* Tela servida pelo microsservico de recomendacoes (via gateway) */}
           <Route path="/recommendations" element={<RecommendationsPage />} />
+          {/* Listas: /lists?tag=indie e a descoberta, /lists/:id a lista aberta.
+              A ordem nao importa aqui - "/lists" e "/lists/:id" nao colidem. */}
+          <Route path="/lists" element={<ListsPage />} />
+          <Route path="/lists/:id" element={<ListDetailPage />} />
           <Route path="/users/:username" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

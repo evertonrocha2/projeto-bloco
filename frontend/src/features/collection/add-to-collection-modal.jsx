@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
-import { X, Search, Check } from 'lucide-react'
+import { useState } from 'react'
+import { X } from 'lucide-react'
 import { api } from '@/lib/api'
 import { btnPrimary, field } from '@/lib/ui.js'
-import GameCover from '@/ui/game-cover.jsx'
 import Select from '@/ui/select.jsx'
+import GamePicker from '@/features/catalog/game-picker.jsx'
 import { COLLECTION_STATUSES, DEFAULT_STATUS } from '@/lib/collection-status.js'
 
 // Mesma conversao {code,label} -> {value,label} da tela de detalhe do jogo.
@@ -12,9 +12,9 @@ const STATUS_OPTIONS = COLLECTION_STATUSES.map(({ code, label }) => ({ value: co
 // Popup pra adicionar um jogo na colecao. O fluxo: a pessoa busca/filtra pelo
 // nome, escolhe um jogo da lista, define horas e status, e confirma. Nada e
 // adicionado automaticamente - so quando ela clica em "Adicionar".
+//
+// A busca em si mora no GamePicker, compartilhado com a tela de lista tematica.
 export default function AddToCollectionModal({ onClose, onAdded, initialGame = null }) {
-  const [games, setGames] = useState([])
-  const [search, setSearch] = useState('')
   // se veio um jogo pre-selecionado (ex: clicou no "+" de um card), ja comeca nele
   const [selected, setSelected] = useState(initialGame)
   const [hours, setHours] = useState(0)
@@ -23,16 +23,6 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
   const [status, setStatus] = useState(DEFAULT_STATUS)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    api.listGames().then(setGames).catch(() => setGames([]))
-  }, [])
-
-  // filtra pelo texto digitado
-  const filtered = useMemo(
-    () => games.filter((game) => game.title.toLowerCase().includes(search.toLowerCase())),
-    [games, search],
-  )
 
   async function handleAdd() {
     if (!selected) return
@@ -61,49 +51,7 @@ export default function AddToCollectionModal({ onClose, onAdded, initialGame = n
           <button onClick={onClose} className="text-slate hover:text-ink cursor-pointer"><X size={20} /></button>
         </div>
 
-        {/* busca */}
-        <div className="p-4 border-b border-line">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate/60" />
-            <input
-              autoFocus
-              className="w-full bg-canvas border border-line pl-9 pr-3 py-2 text-sm text-ink outline-none focus:border-accent focus:ring-4 focus:ring-accent/10"
-              placeholder="Buscar jogo pelo nome..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* lista de jogos */}
-        <div className="overflow-y-auto p-2 flex-1">
-          {filtered.length === 0 && <p className="text-sm text-slate p-3">Nenhum jogo encontrado.</p>}
-          {filtered.map((game) => {
-            const active = selected?.id === game.id
-            return (
-              <button
-                key={game.id}
-                onClick={() => setSelected(game)}
-                className={
-                  'w-full flex items-center gap-3 p-2 text-left transition cursor-pointer ' +
-                  (active ? 'bg-accent-soft' : 'hover:bg-mist')
-                }
-              >
-                {/* Contêiner de tamanho fixo com a capa preenchendo por dentro. O GameCover
-                    traz w-full na base, então passar w-16 direto nele deixava as duas
-                    larguras competindo e a capa saía esticada na linha inteira. */}
-                <span className="block h-14 w-10 shrink-0 overflow-hidden border border-line">
-                  <GameCover game={game} className="h-full" />
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-semibold text-ink truncate">{game.title}</span>
-                  <span className="block text-xs text-slate truncate">{game.genre}</span>
-                </span>
-                {active && <Check size={16} className="text-accent shrink-0" />}
-              </button>
-            )
-          })}
-        </div>
+        <GamePicker selected={selected} onSelect={setSelected} />
 
         {/* rodape: so aparece quando um jogo esta selecionado */}
         {selected && (

@@ -191,6 +191,43 @@ h2, h3 {
   animation-name: select-panel-in-up;
 }
 
+/* --- Platina ---
+   Uma faixa de luz ambar atravessa a capa quando a pessoa marca um jogo como
+   PLATINADO. Dispara so no momento da marcacao, nunca ao carregar a tela: uma
+   animacao que toca toda vez que a pagina abre deixa de ser comemoracao e vira
+   ruido, e some justamente a diferenca entre "voce acabou de conseguir" e "voce
+   conseguiu algum dia".
+
+   O ::after e absoluto sobre a capa, com pointer-events em none pra nao roubar o
+   clique durante os 900ms em que existe. */
+@keyframes platinum-sweep {
+  from { transform: translateX(-120%) skewX(-12deg); }
+  to   { transform: translateX(220%) skewX(-12deg); }
+}
+
+.platinum-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(212 160 95 / 0) 35%,
+    rgb(212 160 95 / 0.55) 50%,
+    rgb(212 160 95 / 0) 65%,
+    transparent 100%
+  );
+  animation: platinum-sweep 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sem movimento, sem varredura - mas a marcacao em si continua funcionando. */
+@media (prefers-reduced-motion: reduce) {
+  .platinum-sweep::after {
+    display: none;
+  }
+}
+
 /* Barra de progresso da rolagem, no topo. Anima por transform (scaleX), que o
    navegador resolve na GPU - animar "width" forcaria recalculo de layout a cada
    quadro. */
