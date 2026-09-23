@@ -84,7 +84,9 @@ jobs:
           config: .github/kind-config.yaml
 
       - name: Apontar o overlay pras imagens deste commit
-        run: sed -i "s/newTag: latest/newTag: ${GITHUB_SHA}/" k8s/overlays/ci/kustomization.yaml
+        run: |
+          sed -i "s/newTag: latest/newTag: ${GITHUB_SHA}/" k8s/overlays/ci/kustomization.yaml
+          grep newTag k8s/overlays/ci/kustomization.yaml
 
       - name: Credencial pra puxar do GHCR
         run: |
