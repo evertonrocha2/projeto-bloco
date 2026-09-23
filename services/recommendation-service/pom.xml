@@ -41,7 +41,8 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Descoberta: acha o monolito pelo nome ("gamelog"), sem endereco fixo -->
+        <!-- Descoberta: registra este servico no Eureka pro gateway achar pelo nome
+             (lb://recommendation-service). -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
@@ -53,23 +54,21 @@
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- OpenFeign: declara a chamada HTTP pro monolito como uma INTERFACE Java.
-             O Feign gera a implementacao e, integrado ao Eureka, resolve o nome do
-             servico pra um endereco real na hora da chamada. -->
+        <!-- TP4: OpenFeign e Resilience4j SAIRAM daqui.
+
+             No TP3 este servico chamava o monolito por HTTP a cada recalculo, e o
+             circuit breaker existia pra conter o efeito cascata quando o monolito
+             caia. Com a arquitetura orientada a eventos o servico mantem a propria
+             copia dos dados que precisa, atualizada pelos eventos que chegam pelo
+             RabbitMQ. Nao ha mais chamada sincrona no caminho da requisicao do
+             usuario - e sem chamada remota, nao ha o que o disjuntor proteger. -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
-        <!-- Circuit breaker: quando o monolito nao responde, para de tentar e cai
-             pro plano B em vez de acumular requisicoes esperando timeout. -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-        </dependency>
-
-        <!-- /actuator/health, /actuator/refresh (recarrega config) e
-             /actuator/circuitbreakers (estado do disjuntor) -->
+        <!-- /actuator/health (inclui o estado da conexao com o RabbitMQ) e
+             /actuator/refresh (recarrega config) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -78,6 +77,26 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>rabbitmq</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

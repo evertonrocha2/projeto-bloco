@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-// Exige token nas escritas do microsservico de recomendacoes.
+// Exige token nas escritas do microsservico de recomendacoes e em todo o
+// notification-service (exceto o feed publico).
 //
 // === Por que a checagem fica no gateway ===
 //
@@ -45,7 +46,9 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     private static final Logger log = LoggerFactory.getLogger(AuthenticationFilter.class);
 
-    private static final String PROTECTED_PREFIX = "/api/recommendations";
+    private static final String RECOMMENDATIONS_PREFIX = "/api/recommendations";
+    private static final String NOTIFICATIONS_PREFIX = "/api/notifications";
+    private static final String PUBLIC_FEED = "/api/notifications/feed";
     private static final String BEARER_PREFIX = "Bearer ";
 
     @Override
@@ -68,9 +71,18 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     // Leitura de recomendacao e publica, igual ao perfil publico do monolito. O que
     // exige estar logado e ESCREVER: recalcular o lote de alguem, ou registrar
     // feedback no nome de alguem.
+    //
+    // Notificacoes (TP4) sao o contrario: ate a LEITURA e privada, porque a caixa
+    // de entrada de alguem nao e publica. A excecao e o feed da comunidade, que so
+    // mostra o que ja e publico (reviews publicadas). OPTIONS passa sempre: e o
+    // preflight de CORS, que o navegador manda sem Authorization.
     private boolean requiresToken(ServerHttpRequest request) {
-        return request.getMethod() == HttpMethod.POST
-                && request.getPath().value().startsWith(PROTECTED_PREFIX);
+        String path = request.getPath().value();
+        HttpMethod method = request.getMethod();
+        if (path.startsWith(NOTIFICATIONS_PREFIX)) {
+            return method != HttpMethod.OPTIONS && !path.startsWith(PUBLIC_FEED);
+        }
+        return method == HttpMethod.POST && path.startsWith(RECOMMENDATIONS_PREFIX);
     }
 
     private boolean hasBearerToken(ServerHttpRequest request) {

@@ -7,6 +7,10 @@ import com.gamelog.catalog.domain.Game;
 import com.gamelog.catalog.repository.GameRepository;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
+import com.gamelog.messaging.EventTypes;
+import com.gamelog.messaging.RecordingEventPublisher;
+import com.gamelog.messaging.event.ReviewRepliedPayload;
+import com.gamelog.messaging.event.ReviewVotedPayload;
 import com.gamelog.review.domain.Review;
 import com.gamelog.review.domain.ReviewReply;
 import com.gamelog.review.domain.VoteType;
@@ -49,12 +53,14 @@ class ReviewSocialServiceTest {
     private GameRepository gameRepository;
 
     private ReviewSocialService service;
+    private RecordingEventPublisher events;
     private Review reviewDaAna;
 
     @BeforeEach
     void seed() {
+        events = new RecordingEventPublisher();
         service = new ReviewSocialService(
-                reviewVoteRepository, reviewReplyRepository, reviewRepository, userRepository);
+                reviewVoteRepository, reviewReplyRepository, reviewRepository, userRepository, events);
 
         User ana = userRepository.save(new User("ana", "ana@email.com", "hash", null));
         userRepository.save(new User("beto", "beto@email.com", "hash", null));
@@ -200,6 +206,54 @@ class ReviewSocialServiceTest {
 
         assertThatThrownBy(() -> service.deleteReply("carla", doBeto.id()))
                 .isInstanceOf(BadRequestException.class);
+    }
+
+    // ---------- eventos (TP4) ----------
+
+    @Test
+    void votoNovoPublicaReviewVoted() {
+        service.vote("beto", reviewDaAna.getId(), VoteType.POSITIVE);
+
+        assertThat(events.types()).containsExactly(EventTypes.REVIEW_VOTED);
+        ReviewVotedPayload payload = (ReviewVotedPayload) events.published().get(0).payload();
+        assertThat(payload.reviewAuthor()).isEqualTo("ana");
+        assertThat(payload.voter()).isEqualTo("beto");
+        assertThat(payload.voteType()).isEqualTo("POSITIVE");
+    }
+
+    @Test
+    void desfazerVotoNaoPublicaNada() {
+        service.vote("beto", reviewDaAna.getId(), VoteType.POSITIVE);
+        service.vote("beto", reviewDaAna.getId(), VoteType.POSITIVE);
+        service.removeVote("beto", reviewDaAna.getId());
+
+        // So o primeiro clique virou evento: desfazer nao e noticia pra ninguem.
+        assertThat(events.types()).containsExactly(EventTypes.REVIEW_VOTED);
+    }
+
+    @Test
+    void respostaPublicaReviewRepliedComQuemEstaEnvolvido() {
+        ReplyResponse raiz = service.reply(
+                "beto", reviewDaAna.getId(), new CreateReplyRequest("discordo", null));
+        service.reply("carla", reviewDaAna.getId(), new CreateReplyRequest("por que?", raiz.id()));
+
+        assertThat(events.types()).containsExactly(EventTypes.REVIEW_REPLIED, EventTypes.REVIEW_REPLIED);
+        ReviewRepliedPayload primeira = (ReviewRepliedPayload) events.published().get(0).payload();
+        ReviewRepliedPayload segunda = (ReviewRepliedPayload) events.published().get(1).payload();
+
+        assertThat(primeira.reviewAuthor()).isEqualTo("ana");
+        assertThat(primeira.parentAuthor()).isNull();
+        assertThat(segunda.replyAuthor()).isEqualTo("carla");
+        assertThat(segunda.parentAuthor()).isEqualTo("beto");
+        assertThat(segunda.gameTitle()).isEqualTo("Zelda");
+    }
+
+    @Test
+    void operacaoRecusadaNaoPublicaEvento() {
+        assertThatThrownBy(() -> service.vote("ana", reviewDaAna.getId(), VoteType.POSITIVE))
+                .isInstanceOf(BadRequestException.class);
+
+        assertThat(events.published()).isEmpty();
     }
 
     // ---------- montagem da arvore ----------

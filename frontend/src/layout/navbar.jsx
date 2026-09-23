@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Gamepad2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth.jsx'
 import { btnPrimary } from '@/lib/ui.js'
+import NotificationBell from '@/features/notifications/notification-bell.jsx'
 
 // Barra do topo, em todas as paginas. NavLink marca sozinho o link atual.
 export default function Navbar() {
@@ -53,6 +54,7 @@ export default function Navbar() {
               <NavLink to={`/users/${username}`} className={link} title={`Perfil de @${username}`}>
                 Perfil
               </NavLink>
+              <NotificationBell username={username} />
               <button onClick={handleLogout} className="text-sm font-medium text-slate hover:text-ink transition-colors cursor-pointer">
                 Sair
               </button>

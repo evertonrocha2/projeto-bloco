@@ -9,9 +9,13 @@ import com.gamelog.collection.dto.CollectionRevisionResponse;
 import com.gamelog.collection.repository.CollectionRepository;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
+import com.gamelog.messaging.EventPublisher;
+import com.gamelog.messaging.EventTypes;
+import com.gamelog.messaging.event.CollectionEventPayload;
 import com.gamelog.shared.BadRequestException;
 import com.gamelog.shared.NotFoundException;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +29,16 @@ public class CollectionService {
     private final CollectionRepository collectionRepository;
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
+    private final EventPublisher eventPublisher;
 
     public CollectionService(CollectionRepository collectionRepository,
                             UserRepository userRepository,
-                            GameRepository gameRepository) {
+                            GameRepository gameRepository,
+                            EventPublisher eventPublisher) {
         this.collectionRepository = collectionRepository;
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -43,16 +50,22 @@ public class CollectionService {
                 .orElseThrow(() -> new NotFoundException("Jogo nao encontrado"));
 
         // Ja esta na colecao? Atualiza. Senao, cria.
-        CollectionEntry entry = collectionRepository
-                .findByUserIdAndGameId(user.getId(), game.getId())
-                .map(existing -> {
-                    existing.setHoursPlayed(request.hoursPlayed());
-                    existing.setStatus(request.status());
-                    return existing;
+        Optional<CollectionEntry> existing = collectionRepository.findByUserIdAndGameId(user.getId(), game.getId());
+        // Guardado antes de mudar: o evento conta de onde o jogo saiu, e e isso que
+        // permite ao consumidor reconhecer "zerou agora".
+        String previousStatus = existing.map(entry -> entry.getStatus().name()).orElse(null);
+
+        CollectionEntry entry = existing
+                .map(found -> {
+                    found.setHoursPlayed(request.hoursPlayed());
+                    found.setStatus(request.status());
+                    return found;
                 })
                 .orElseGet(() -> new CollectionEntry(user, game, request.hoursPlayed(), request.status()));
 
         collectionRepository.save(entry);
+        eventPublisher.publish(EventTypes.COLLECTION_UPDATED, String.valueOf(entry.getId()),
+                CollectionEventPayload.from(entry, previousStatus));
         return CollectionEntryResponse.from(entry);
     }
 

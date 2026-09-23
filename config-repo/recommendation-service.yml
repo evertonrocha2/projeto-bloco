@@ -25,27 +25,14 @@ recommendation:
     # Quantas recomendacoes devolver.
     max-results: 8
 
-resilience4j:
-  circuitbreaker:
-    configs:
-      default:
-        register-health-indicator: true
-    instances:
-      # "gamelog" e o nome do servico chamado (o monolito). Quando as chamadas
-      # pra ele comecam a falhar, o disjuntor abre e o servico passa a responder
-      # pelo fallback em vez de ficar esperando timeout a cada requisicao.
-      gamelog:
-        sliding-window-size: 5
-        # Sem isso o disjuntor so avaliaria depois de 100 chamadas (padrao), o
-        # que na pratica nunca abriria numa demonstracao.
-        minimum-number-of-calls: 3
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 2
-
-  timelimiter:
-    instances:
-      gamelog:
-        # Se o monolito nao respondeu em 3s, trata como falha. Melhor devolver
-        # recomendacao antiga rapido do que deixar o usuario esperando.
-        timeout-duration: 3s
+# TP4: o circuit breaker (Resilience4j) que protegia a chamada HTTP ao monolito
+# saiu junto com a chamada. Com eventos, o monolito fora do ar nao gera timeout
+# aqui: as mensagens simplesmente esperam na fila do RabbitMQ.
+app:
+  recalculation:
+    concurrency: 2-4
+  messaging:
+    retry:
+      # Tentativas locais antes de a mensagem ir pra DLQ.
+      max-attempts: 3
+      initial-interval-ms: 500

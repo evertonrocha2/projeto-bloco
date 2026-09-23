@@ -48,4 +48,8 @@ public interface CollectionRepository extends JpaRepository<CollectionEntry, Lon
     // extra por item pra resolver o Game LAZY.
     @Query("select ce.game.id from CollectionEntry ce where ce.user.username = :username")
     List<Long> findOwnedGameIdsByUsername(@Param("username") String username);
+
+    // TP4: a colecao de todo mundo, pro snapshot inicial dos consumidores.
+    @Query("select ce.user.username, ce.game.id, ce.status from CollectionEntry ce")
+    List<Object[]> findAllOwnershipRows();
 }

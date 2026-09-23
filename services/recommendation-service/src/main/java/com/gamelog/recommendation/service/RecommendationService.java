@@ -1,7 +1,7 @@
 package com.gamelog.recommendation.service;
 
-import com.gamelog.recommendation.client.ActivitySource;
-import com.gamelog.recommendation.client.GameLogSnapshot;
+import com.gamelog.recommendation.activity.ActivitySource;
+import com.gamelog.recommendation.activity.GameLogSnapshot;
 import com.gamelog.recommendation.config.ScoringProperties;
 import com.gamelog.recommendation.domain.FeedbackEntry;
 import com.gamelog.recommendation.domain.FeedbackVerdict;
@@ -24,9 +24,15 @@ import org.springframework.transaction.annotation.Transactional;
 // Orquestra o microsservico: busca o retrato do GameLog, roda o algoritmo, grava
 // o lote e registra feedback.
 //
-// Repare no que ele NAO faz: nao sabe o que e Feign, nem Eureka, nem circuit
-// breaker. Ele depende do ActivitySource, e o problema de "como falar com o outro
-// servico" fica inteiro do outro lado dessa interface.
+// Repare no que ele NAO faz: nao sabe de onde o retrato vem. Depende do
+// ActivitySource, e o problema de "como obter os dados do outro servico" fica
+// inteiro do outro lado dessa interface. Prova disso: no TP4 a origem trocou de
+// HTTP sincrono (Feign + circuit breaker) pra projecao local alimentada por
+// eventos, e este arquivo so mudou nos imports e nos comentarios.
+//
+// O refresh agora tem dois gatilhos: o botao "recalcular" da tela (HTTP) e o
+// comando RecalculateCommand que chega pela fila quando um evento muda a atividade
+// do usuario (ver RecalculationListener).
 @Service
 public class RecommendationService {
 
@@ -51,9 +57,8 @@ public class RecommendationService {
     // Serve as recomendacoes vigentes. Se o usuario ainda nao tem lote, gera um.
     //
     // Ler do banco em vez de recalcular a cada abertura de tela e uma escolha de
-    // desempenho e de acoplamento: abrir a tela nao pode custar duas chamadas de
-    // rede ao monolito. Recalcular passa a ser uma acao explicita do usuario
-    // (botao "recalcular") ou o caso do primeiro acesso.
+    // desempenho: o lote ja e mantido em dia pelos comandos de recalculo que os
+    // eventos disparam, entao abrir a tela e so uma consulta.
     @Transactional
     public RecommendationsResponse getRecommendations(String username) {
         List<Recommendation> stored =
@@ -66,17 +71,16 @@ public class RecommendationService {
         return refresh(username);
     }
 
-    // Recalcula do zero: busca atividade + catalogo no monolito, pontua e
+    // Recalcula do zero: le atividade + catalogo da projecao local, pontua e
     // substitui o lote gravado.
     @Transactional
     public RecommendationsResponse refresh(String username) {
         Optional<GameLogSnapshot> snapshot = activitySource.fetch(username);
 
         // === Caminho degradado ===
-        // Nao deu pra falar com o monolito (fora do ar, lento ou disjuntor aberto).
-        // Em vez de propagar o erro, devolve o ultimo lote gravado marcado como
-        // desatualizado. E aqui que o banco proprio do microsservico deixa de ser
-        // detalhe de implementacao e passa a ser o que mantem a feature de pe.
+        // A projecao ainda nao tem dados (o servico acabou de subir e o snapshot
+        // inicial ainda nao chegou). Em vez de propagar erro, devolve o ultimo lote
+        // gravado marcado como desatualizado.
         if (snapshot.isEmpty()) {
             return toResponse(username,
                     recommendationRepository.findByUsernameOrderByScoreDesc(username),
@@ -128,8 +132,8 @@ public class RecommendationService {
     public TasteProfileResponse getTasteProfile(String username) {
         Optional<GameLogSnapshot> snapshot = activitySource.fetch(username);
 
-        // Sem o monolito nao ha como calcular perfil: ele depende das avaliacoes,
-        // que sao dado do outro servico. Perfil vazio e a resposta honesta.
+        // Projecao ainda vazia: nao ha como calcular perfil. Perfil vazio e a
+        // resposta honesta.
         if (snapshot.isEmpty()) {
             return new TasteProfileResponse(username, List.of());
         }

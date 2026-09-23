@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.gamelog.recommendation.client.ActivitySource;
-import com.gamelog.recommendation.client.GameLogSnapshot;
+import com.gamelog.recommendation.activity.ActivitySource;
+import com.gamelog.recommendation.activity.GameLogSnapshot;
 import com.gamelog.recommendation.config.ScoringProperties;
 import com.gamelog.recommendation.domain.CatalogGame;
 import com.gamelog.recommendation.domain.GameActivity;

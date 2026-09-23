@@ -31,22 +31,21 @@ describe('reasonText', () => {
 })
 
 describe('serviceStatus', () => {
-  it('indica que esta ao vivo quando os dados sao recentes', () => {
+  it('indica que esta em dia quando a projecao ja foi sincronizada', () => {
     const status = serviceStatus(false)
 
     expect(status.live).toBe(true)
-    expect(status.label).toBe('ao vivo')
+    expect(status.label).toBe('em dia')
   })
 
-  it('indica modo degradado quando a resposta veio marcada como desatualizada', () => {
-    // stale=true significa que o microsservico nao conseguiu falar com o
-    // monolito e serviu o que tinha guardado. Mostrar isso e mais honesto do que
-    // fingir normalidade - senao o usuario clicaria em "recalcular" varias vezes
-    // sem entender por que a lista nao muda.
+  it('indica sincronizacao quando a resposta veio marcada como desatualizada', () => {
+    // stale=true significa que a copia local do catalogo (alimentada por eventos)
+    // ainda nao foi preenchida, e o microsservico serviu o que tinha guardado.
+    // Mostrar isso e mais honesto do que fingir normalidade.
     const status = serviceStatus(true)
 
     expect(status.live).toBe(false)
-    expect(status.label).toBe('modo degradado')
+    expect(status.label).toBe('sincronizando')
     expect(status.detail).toMatch(/catálogo/i)
   })
 })

@@ -4,6 +4,9 @@ import com.gamelog.catalog.domain.Game;
 import com.gamelog.catalog.repository.GameRepository;
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
+import com.gamelog.messaging.EventPublisher;
+import com.gamelog.messaging.EventTypes;
+import com.gamelog.messaging.event.ReviewEventPayload;
 import com.gamelog.review.domain.Review;
 import com.gamelog.review.dto.CreateReviewRequest;
 import com.gamelog.review.dto.GameRatingRow;
@@ -25,19 +28,28 @@ import java.util.stream.Collectors;
 // Concentra tudo que envolve reviews: criar, editar, apagar, listar, calcular
 // medias e consultar o historico de mudancas. Como uma review liga usuario e
 // jogo, esse service conversa com os tres repositorios.
+//
+// TP4: toda escrita tambem anuncia o fato (review.created/updated/deleted). O
+// evento e gravado na MESMA transacao da review (outbox), entao nao existe review
+// sem evento nem evento sem review. Este service nao sabe quem vai ouvir - antes do
+// TP4 era o microsservico que vinha perguntar; agora o monolito so conta o que
+// aconteceu.
 @Service
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
+    private final EventPublisher eventPublisher;
 
     public ReviewService(ReviewRepository reviewRepository,
                          UserRepository userRepository,
-                         GameRepository gameRepository) {
+                         GameRepository gameRepository,
+                         EventPublisher eventPublisher) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -61,6 +73,8 @@ public class ReviewService {
 
         Review review = new Review(user, game, request.rating(), request.text());
         reviewRepository.save(review);
+        eventPublisher.publish(EventTypes.REVIEW_CREATED, String.valueOf(review.getId()),
+                ReviewEventPayload.from(review));
         return ReviewResponse.from(review);
     }
 
@@ -77,6 +91,8 @@ public class ReviewService {
 
         review.update(request.rating(), request.text());
         reviewRepository.save(review);
+        eventPublisher.publish(EventTypes.REVIEW_UPDATED, String.valueOf(review.getId()),
+                ReviewEventPayload.from(review));
         return ReviewResponse.from(review);
     }
 
@@ -85,7 +101,11 @@ public class ReviewService {
     @Transactional
     public void delete(String username, Long reviewId) {
         Review review = findOwnedReview(username, reviewId);
+        // O payload e montado ANTES do delete: depois dele a review nao pode mais
+        // ser lida, e o consumidor precisa saber qual nota tirar da conta.
+        ReviewEventPayload lastState = ReviewEventPayload.from(review);
         reviewRepository.delete(review);
+        eventPublisher.publish(EventTypes.REVIEW_DELETED, String.valueOf(reviewId), lastState);
     }
 
     // Linha do tempo de uma review: cada revisao traz o estado daquele momento

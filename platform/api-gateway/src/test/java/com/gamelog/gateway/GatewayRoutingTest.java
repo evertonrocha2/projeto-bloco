@@ -51,6 +51,16 @@ class GatewayRoutingTest {
     }
 
     @Test
+    @DisplayName("notificacoes vao para o notification-service")
+    void notificationPathsGoToTheNotificationService() {
+        Route route = routeById("notification-service");
+
+        assertThat(matches(route, "/api/notifications/demo")).isTrue();
+        assertThat(route.getUri().toString()).isEqualTo("lb://notification-service");
+        assertThat(route.getOrder()).isLessThan(routeById("gamelog-monolith").getOrder());
+    }
+
+    @Test
     @DisplayName("o resto da API vai para o monolito")
     void everythingElseGoesToTheMonolith() {
         Route route = routeById("gamelog-monolith");

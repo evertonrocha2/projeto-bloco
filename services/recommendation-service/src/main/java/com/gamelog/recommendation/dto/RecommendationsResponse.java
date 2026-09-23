@@ -8,8 +8,8 @@ public record RecommendationsResponse(
         String username,
         // Quando o lote foi calculado. Null se nunca houve lote.
         Instant generatedAt,
-        // true = esta resposta NAO refletiu uma conversa bem-sucedida com o
-        // monolito; o que esta aqui e o ultimo lote gravado (ou nada).
+        // true = a projecao local ainda nao foi sincronizada com o monolito; o que
+        // esta aqui e o ultimo lote gravado (ou nada).
         //
         // Expor isso na API em vez de esconder e uma decisao de honestidade: o
         // front acende um aviso de "modo degradado" e o usuario entende por que a

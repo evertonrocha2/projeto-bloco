@@ -50,6 +50,14 @@ spring:
           predicates:
             - Path=/api/recommendations/**
 
+        # TP4: o segundo consumidor dos eventos do monolito. Mesma regra de
+        # ordem da rota acima.
+        - id: notification-service
+          uri: lb://notification-service
+          order: 0
+          predicates:
+            - Path=/api/notifications/**
+
         - id: gamelog-monolith
           uri: lb://gamelog
           order: 1
@@ -63,7 +71,7 @@ spring:
             # gateway, os servicos de tras nao precisam saber que existe um front em
             # outra porta.
             allowedOrigins: "http://localhost:5173"
-            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
+            allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
             allowedHeaders: "*"
 
 eureka:

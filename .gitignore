@@ -4,10 +4,11 @@ target/
 *.class
 
 # Bancos H2 em arquivo (dados locais, nao vao pro repositorio).
-# Sao DOIS bancos separados - um por servico - e essa separacao e o ponto:
-# o microsservico nao compartilha tabela com o monolito.
+# Um banco por servico - e essa separacao e o ponto: nenhum servico
+# compartilha tabela com outro.
 services/gamelog/data/
 services/recommendation-service/data/
+services/notification-service/data/
 
 # Imagens enviadas pelos usuarios. Sao dado de execucao, nao codigo - e o
 # repositorio nao e lugar de guardar arquivo que qualquer pessoa logada pode

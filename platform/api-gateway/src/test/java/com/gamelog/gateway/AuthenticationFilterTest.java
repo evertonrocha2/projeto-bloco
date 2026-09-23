@@ -79,6 +79,34 @@ class AuthenticationFilterTest {
     }
 
     @Test
+    @DisplayName("notificacoes exigem token ate na leitura")
+    void readingNotificationsRequiresToken() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/notifications/demo").build());
+        RecordingChain chain = new RecordingChain();
+
+        filter.filter(exchange, chain).block();
+
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(chain.wasCalled()).isFalse();
+    }
+
+    @Test
+    @DisplayName("o feed da comunidade e o preflight de CORS passam sem token")
+    void publicFeedAndPreflightPassThrough() {
+        RecordingChain feed = new RecordingChain();
+        filter.filter(MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/notifications/feed").build()), feed).block();
+
+        RecordingChain preflight = new RecordingChain();
+        filter.filter(MockServerWebExchange.from(
+                MockServerHttpRequest.options("/api/notifications/demo").build()), preflight).block();
+
+        assertThat(feed.wasCalled()).isTrue();
+        assertThat(preflight.wasCalled()).isTrue();
+    }
+
+    @Test
     @DisplayName("nao interfere nas escritas do monolito")
     void doesNotInterfereWithMonolithWrites() {
         // Publicar review passa por aqui a caminho do monolito, que tem o proprio

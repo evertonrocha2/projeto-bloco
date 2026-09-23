@@ -25,11 +25,16 @@ management:
       exposure:
         # health: usado pra saber se o servico esta de pe.
         # refresh: e o que permite recarregar a configuracao sem reiniciar.
-        # circuitbreakers: mostra o estado dos disjuntores do Resilience4j.
-        include: health,info,refresh,circuitbreakers
+        include: health,info,refresh
   endpoint:
     health:
       show-details: always
-  health:
-    circuitbreakers:
-      enabled: true
+
+# TP4: broker comum a todos os servicos que trocam eventos. As variaveis de
+# ambiente (Docker/Kubernetes) tem prioridade; o padrao serve pro ambiente local.
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}

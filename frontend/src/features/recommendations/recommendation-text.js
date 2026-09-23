@@ -22,26 +22,26 @@ export function reasonText(reasonGenres) {
   return `porque você gosta de ${generos}`
 }
 
-// O estado da conversa entre o microsservico e o monolito, pra tela poder mostrar.
+// O estado da projecao local do microsservico, pra tela poder mostrar.
 //
-// Expor isso e uma escolha de honestidade: quando o monolito esta fora do ar, as
-// recomendacoes vem do banco proprio do microsservico e podem estar
-// desatualizadas. Avisar e melhor do que deixar a pessoa clicando em "recalcular"
-// sem entender por que a lista nao muda.
+// Desde o TP4 o microsservico nao chama mais o monolito: ele mantem uma copia do
+// catalogo alimentada por eventos. stale=true so acontece quando essa copia ainda
+// nao foi sincronizada (o servico acabou de subir). Avisar e melhor do que deixar
+// a pessoa clicando em "recalcular" sem entender por que a lista nao muda.
 export function serviceStatus(stale) {
   if (stale) {
     return {
       live: false,
-      label: 'modo degradado',
+      label: 'sincronizando',
       detail:
-        'O serviço de catálogo não respondeu. Estas recomendações vêm do último ' +
-        'cálculo salvo e podem estar desatualizadas.',
+        'O serviço de recomendações ainda está recebendo o catálogo. Estas ' +
+        'recomendações vêm do último cálculo salvo e podem estar desatualizadas.',
     }
   }
 
   return {
     live: true,
-    label: 'ao vivo',
-    detail: 'Recomendações calculadas agora, com os dados atuais do catálogo.',
+    label: 'em dia',
+    detail: 'Recomendações atualizadas a cada avaliação, pelos eventos do catálogo.',
   }
 }
