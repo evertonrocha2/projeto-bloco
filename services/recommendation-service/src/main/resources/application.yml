@@ -10,18 +10,18 @@ spring:
 
   config:
     # optional: sobe mesmo sem o Config Server, usando os valores deste arquivo.
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
 
   # === BANCO PROPRIO ===
   # Arquivo separado do banco do monolito (que fica em services/gamelog/data).
   # As tabelas daqui (recommendations, recommendation_feedback e, desde o TP4, a
   # projecao: catalog_games, user_ratings, user_collection, processed_events) nao
   # existem no monolito, e as dele nao existem aqui.
+  # TP5: PostgreSQL em Docker/Kubernetes, via DB_URL (driver deduzido pela URL).
   datasource:
-    url: jdbc:h2:file:./data/recommendations;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${DB_URL:jdbc:h2:file:./data/recommendations;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
 
   jpa:
     hibernate:
@@ -37,8 +37,8 @@ spring:
   # === Mensageria (TP4) ===
   # Em Docker/Kubernetes o endereco vem de SPRING_RABBITMQ_HOST.
   rabbitmq:
-    host: localhost
-    port: 5672
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
     template:
       # Quanto o pedido de snapshot espera pela resposta do monolito. Passou disso,
       # o monolito esta fora e a tentativa se repete no proximo ciclo.
@@ -53,7 +53,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
 
@@ -61,10 +61,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,refresh
+        include: health,info,refresh,prometheus
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
 
 # --- Valores de reserva ---
 # Normalmente estes numeros vem do Config Server (config-repo/recommendation-service.yml),

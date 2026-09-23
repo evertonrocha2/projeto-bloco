@@ -2,8 +2,11 @@ package com.gamelog.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import java.time.Clock;
 import java.util.UUID;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,11 +31,16 @@ public class OutboxEventPublisher implements EventPublisher {
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
     private final Clock clock;
+    // Opcional: sem tracing configurado (testes, ou management.tracing.enabled=false)
+    // o evento sai sem trace e tudo continua funcionando.
+    private final ObjectProvider<Tracer> tracer;
 
-    public OutboxEventPublisher(OutboxRepository outboxRepository, ObjectMapper objectMapper, Clock clock) {
+    public OutboxEventPublisher(OutboxRepository outboxRepository, ObjectMapper objectMapper, Clock clock,
+                                ObjectProvider<Tracer> tracer) {
         this.outboxRepository = outboxRepository;
         this.objectMapper = objectMapper;
         this.clock = clock;
+        this.tracer = tracer;
     }
 
     @Override
@@ -47,8 +55,16 @@ public class OutboxEventPublisher implements EventPublisher {
                 aggregateId,
                 payload);
 
-        outboxRepository.save(new OutboxEvent(
-                event.eventId(), eventType, aggregateId, serialize(event), event.occurredAt()));
+        OutboxEvent row = new OutboxEvent(
+                event.eventId(), eventType, aggregateId, serialize(event), event.occurredAt());
+
+        Tracer current = tracer.getIfAvailable();
+        Span span = current == null ? null : current.currentSpan();
+        if (span != null) {
+            row.attachTrace(span.context().traceId(), span.context().spanId());
+        }
+
+        outboxRepository.save(row);
     }
 
     private String serialize(IntegrationEvent event) {

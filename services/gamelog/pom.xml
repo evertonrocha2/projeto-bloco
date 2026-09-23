@@ -60,10 +60,17 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Banco H2 em memoria. Some quando a aplicacao para. -->
+        <!-- Banco H2 (arquivo local e memoria nos testes). -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- TP5: em Docker/Kubernetes o banco e PostgreSQL (SPRING_DATASOURCE_URL).
+             O H2 continua sendo o padrao local e dos testes. -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -150,6 +157,18 @@
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- TP5: Tracer em memoria pra provar a propagacao do trace pelo outbox. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TP5: filtros de ruido do tracing (actuator, heartbeat do Eureka) -->
+        <dependency>
+            <groupId>com.gamelog</groupId>
+            <artifactId>observability</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

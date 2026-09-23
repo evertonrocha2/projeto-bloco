@@ -2,6 +2,9 @@ package com.gamelog.messaging;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.TraceContext;
+import io.micrometer.tracing.Tracer;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
@@ -47,15 +50,18 @@ public class OutboxRelay {
     private final RabbitTemplate rabbitTemplate;
     private final Clock clock;
     private final long confirmTimeoutMs;
+    private final ObjectProvider<Tracer> tracer;
 
     public OutboxRelay(OutboxRepository outboxRepository,
                        RabbitTemplate rabbitTemplate,
                        Clock clock,
                        ObjectProvider<MeterRegistry> meterRegistry,
+                       ObjectProvider<Tracer> tracer,
                        @Value("${app.outbox.relay.confirm-timeout-ms:5000}") long confirmTimeoutMs) {
         this.outboxRepository = outboxRepository;
         this.rabbitTemplate = rabbitTemplate;
         this.clock = clock;
+        this.tracer = tracer;
         this.confirmTimeoutMs = confirmTimeoutMs;
 
         // Quantos eventos estao esperando pra sair. Parado em zero e o normal;
@@ -90,6 +96,41 @@ public class OutboxRelay {
     }
 
     boolean deliver(OutboxEvent event) {
+        Span span = continueTrace(event);
+        try (Tracer.SpanInScope ignored = span == null ? null : tracer.getObject().withSpan(span)) {
+            return send(event);
+        } finally {
+            if (span != null) {
+                span.end();
+            }
+        }
+    }
+
+    // Reabre o trace da requisicao que gravou o evento. Com este span em escopo, o
+    // RabbitTemplate (observation habilitada) cria o span de envio como filho e
+    // escreve o header "traceparent" na mensagem; o consumidor continua dali. No
+    // Zipkin aparece UM trace: POST /api/games/7/reviews -> outbox -> RabbitMQ ->
+    // projecao -> recalculo.
+    private Span continueTrace(OutboxEvent event) {
+        Tracer current = tracer.getIfAvailable();
+        if (current == null || event.getTraceId() == null || event.getSpanId() == null) {
+            return null;
+        }
+        TraceContext parent = current.traceContextBuilder()
+                .traceId(event.getTraceId())
+                .spanId(event.getSpanId())
+                .sampled(true)
+                .build();
+        return current.spanBuilder()
+                .setParent(parent)
+                .name("outbox relay " + event.getEventType())
+                .kind(Span.Kind.PRODUCER)
+                .tag("event.id", event.getEventId())
+                .tag("event.type", event.getEventType())
+                .start();
+    }
+
+    private boolean send(OutboxEvent event) {
         CorrelationData correlation = new CorrelationData(event.getEventId());
 
         try {

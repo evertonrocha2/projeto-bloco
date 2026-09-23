@@ -11,7 +11,7 @@ spring:
     name: api-gateway
 
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
 
   cloud:
     gateway:
@@ -70,14 +70,17 @@ spring:
             # CORS resolvido AQUI, num lugar so. Como o navegador so conversa com o
             # gateway, os servicos de tras nao precisam saber que existe um front em
             # outra porta.
-            allowedOrigins: "http://localhost:5173"
+            # TP5: lista separada por virgula, vinda do ambiente. Em Docker o front
+            # e servido pelo nginx na mesma origem da API e o CORS nem entra em jogo;
+            # a lista so importa pro Vite em desenvolvimento.
+            allowedOrigins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
             allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
             allowedHeaders: "*"
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
 
@@ -87,7 +90,9 @@ management:
       exposure:
         # gateway: lista as rotas ativas em /actuator/gateway/routes - util pra
         # conferir o roteamento numa demonstracao.
-        include: health,info,gateway
+        include: health,info,gateway,prometheus
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true

@@ -9,7 +9,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -45,7 +44,7 @@ class OutboxRelayTest {
         repository = mock(OutboxRepository.class);
         rabbitTemplate = mock(RabbitTemplate.class);
         relay = new OutboxRelay(repository, rabbitTemplate, Clock.fixed(NOW, ZoneOffset.UTC),
-                mock(ObjectProvider.class), 1000);
+                mock(ObjectProvider.class), mock(ObjectProvider.class), 1000);
     }
 
     private static OutboxEvent event(String id, String type) {
@@ -139,7 +138,7 @@ class OutboxRelayTest {
                 any(Message.class), any(CorrelationData.class));
 
         relay = new OutboxRelay(repository, rabbitTemplate, Clock.fixed(NOW, ZoneOffset.UTC),
-                emptyProvider(), 50);
+                emptyProvider(), emptyProvider(), 50);
         relay.relayPending();
 
         assertThat(created.getPublishedAt()).isNull();
@@ -147,7 +146,7 @@ class OutboxRelayTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static ObjectProvider<MeterRegistry> emptyProvider() {
+    private static <T> ObjectProvider<T> emptyProvider() {
         return mock(ObjectProvider.class);
     }
 }
