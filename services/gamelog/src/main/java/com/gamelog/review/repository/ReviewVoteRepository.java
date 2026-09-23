@@ -32,4 +32,6 @@ public interface ReviewVoteRepository extends JpaRepository<ReviewVote, Long> {
     // Em quais destas avaliacoes EU votei, e de que lado. Tambem em lote, pelo
     // mesmo motivo das contagens: e o que marca o polegar aceso na tela.
     List<ReviewVote> findByUserIdAndReviewIdIn(Long userId, List<Long> reviewIds);
+
+    List<ReviewVote> findByReviewId(Long reviewId);
 }
