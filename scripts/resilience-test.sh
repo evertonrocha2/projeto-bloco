@@ -74,6 +74,9 @@ pass "notification-service continua respondendo"
 
 $COMPOSE start gamelog >/dev/null
 eventually "gamelog voltou" healthy gamelog
+# Container saudavel nao basta: o gateway so volta a rotear depois que o registro
+# novo aparece no Eureka e o cache do load balancer expira (~10 s).
+eventually "gateway voltou a rotear para o gamelog" http GET /api/games
 
 # ---------------------------------------------------------------------------
 echo "Cenario 4: mensagem invalida"
