@@ -1,0 +1,39 @@
+apiVersion: 1
+
+# As tres fontes, provisionadas por arquivo: o Grafana sobe pronto, sem clique.
+# O que as amarra e o traceId:
+#   log (Loki) --derivedField traceId--> trace (Zipkin)
+#   trace (Zipkin) --tracesToLogs--> logs daquele trace (Loki)
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: ${PROMETHEUS_URL}
+    isDefault: true
+
+  - name: Zipkin
+    uid: zipkin
+    type: zipkin
+    access: proxy
+    url: ${ZIPKIN_URL}
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: "-1m"
+        spanEndTimeShift: "1m"
+        filterByTraceID: false
+        customQuery: true
+        query: '{app=~".+"} |= "traceId=$${__trace.traceId}"'
+
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: ${LOKI_URL}
+    jsonData:
+      derivedFields:
+        - name: traceId
+          matcherRegex: "traceId=(\\w+)"
+          datasourceUid: zipkin
+          url: "$${__value.raw}"
