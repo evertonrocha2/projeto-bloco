@@ -171,10 +171,10 @@ export default function RecommendationsPage() {
       {data?.stale && (
         <div className="border border-warning/40 bg-mist px-5 py-4">
           <p className="text-sm text-warning">
-            <strong className="font-semibold">Modo degradado.</strong> O serviço de
-            catálogo não respondeu, então estas indicações vêm do último cálculo salvo
-            no banco do microsserviço. A tela continua funcionando — o que você vê pode
-            estar desatualizado.
+            <strong className="font-semibold">Sincronizando.</strong> O serviço de
+            recomendações ainda está recebendo os dados do catálogo, então estas
+            indicações vêm do último cálculo salvo. A tela continua funcionando — o que
+            você vê pode estar desatualizado por alguns instantes.
           </p>
         </div>
       )}
@@ -187,7 +187,7 @@ export default function RecommendationsPage() {
               <h2 className="font-display text-xl text-ink mt-2">Você zerou o catálogo</h2>
               <p className="text-slate mt-2 leading-relaxed">
                 {data.stale
-                  ? 'Não foi possível falar com o catálogo e não há um cálculo anterior salvo. Tente recalcular em instantes.'
+                  ? 'O serviço ainda está sincronizando o catálogo e não há um cálculo anterior salvo. Tente recalcular em instantes.'
                   : 'Você já conhece tudo o que está no catálogo, ou descartou o resto. Avalie mais jogos pra gente encontrar coisas novas.'}
               </p>
               <Link to="/games" className={`${btnGhost} mt-5 !py-2.5 text-sm`}>Ver catálogo</Link>

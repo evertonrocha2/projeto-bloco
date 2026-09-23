@@ -5,6 +5,9 @@ import com.gamelog.identity.dto.AuthResponse;
 import com.gamelog.identity.dto.LoginRequest;
 import com.gamelog.identity.dto.RegisterRequest;
 import com.gamelog.identity.repository.UserRepository;
+import com.gamelog.messaging.EventPublisher;
+import com.gamelog.messaging.EventTypes;
+import com.gamelog.messaging.event.UserRegisteredPayload;
 import com.gamelog.security.JwtService;
 import com.gamelog.shared.BadRequestException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,11 +23,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final EventPublisher eventPublisher;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+                       EventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -40,6 +46,8 @@ public class AuthService {
         String hashedPassword = passwordEncoder.encode(request.password());
         User user = new User(request.username(), request.email(), hashedPassword, request.bio());
         userRepository.save(user);
+        eventPublisher.publish(EventTypes.USER_REGISTERED, user.getUsername(),
+                new UserRegisteredPayload(user.getUsername()));
 
         // Ja cadastrou? Ja entra logado: devolvemos o token na hora.
         String token = jwtService.generateToken(user.getUsername());

@@ -3,7 +3,7 @@
 # Este arquivo existe pelo mesmo motivo do discovery-server.yml: a hierarquia de
 # precedencia do Spring Cloud Config. O application.yml compartilhado manda
 #
-#     include: health,info,refresh,circuitbreakers
+#     include: health,info,refresh
 #
 # pra TODO cliente, e configuracao vinda do servidor tem prioridade sobre o
 # application.yml local do servico. O gateway declara localmente

@@ -14,11 +14,9 @@ spring:
 
   # === BANCO PROPRIO ===
   # Arquivo separado do banco do monolito (que fica em services/gamelog/data).
-  # Nao e detalhe de configuracao, e a fronteira do microsservico: as tabelas
-  # daqui (recommendations, recommendation_feedback) nao existem no monolito, e as
-  # tabelas dele (users, games, reviews) nao existem aqui. A unica ligacao entre
-  # os dois mundos e HTTP, e a referencia se faz por username/gameId - sem chave
-  # estrangeira atravessando processo.
+  # As tabelas daqui (recommendations, recommendation_feedback e, desde o TP4, a
+  # projecao: catalog_games, user_ratings, user_collection, processed_events) nao
+  # existem no monolito, e as dele nao existem aqui.
   datasource:
     url: jdbc:h2:file:./data/recommendations;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
@@ -36,17 +34,21 @@ spring:
       enabled: true
       path: /h2-console
 
-  cloud:
-    openfeign:
-      client:
-        config:
-          # Timeout das chamadas ao monolito. Sem limite explicito, o Feign
-          # esperaria o padrao do sistema operacional e o usuario ficaria olhando
-          # a tela girar antes de o fallback entrar em acao. Melhor falhar rapido
-          # e servir a recomendacao anterior.
-          default:
-            connect-timeout: 2000
-            read-timeout: 3000
+  # === Mensageria (TP4) ===
+  # Em Docker/Kubernetes o endereco vem de SPRING_RABBITMQ_HOST.
+  rabbitmq:
+    host: localhost
+    port: 5672
+    template:
+      # Quanto o pedido de snapshot espera pela resposta do monolito. Passou disso,
+      # o monolito esta fora e a tentativa se repete no proximo ciclo.
+      reply-timeout: 10s
+    listener:
+      simple:
+        # Quantas mensagens o broker entrega adiantado pra cada consumidor. Baixo
+        # de proposito: com prefetch alto, um consumidor lento seguraria mensagens
+        # que outro consumidor ocioso poderia estar processando.
+        prefetch: 10
 
 eureka:
   client:
@@ -59,13 +61,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,refresh,circuitbreakers
+        include: health,info,refresh
   endpoint:
     health:
       show-details: always
-  health:
-    circuitbreakers:
-      enabled: true
 
 # --- Valores de reserva ---
 # Normalmente estes numeros vem do Config Server (config-repo/recommendation-service.yml),
@@ -81,15 +80,11 @@ recommendation:
     community-weight: 2.0
     max-results: 8
 
-resilience4j:
-  circuitbreaker:
-    configs:
-      default:
-        register-health-indicator: true
-    instances:
-      gamelog:
-        sliding-window-size: 5
-        minimum-number-of-calls: 3
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 10s
-        permitted-number-of-calls-in-half-open-state: 2
+app:
+  recalculation:
+    # Consumidores da fila de recalculo por instancia (minimo-maximo).
+    concurrency: 2-4
+  messaging:
+    retry:
+      max-attempts: 3
+      initial-interval-ms: 500

@@ -2,13 +2,13 @@ import { serviceStatus } from './recommendation-text.js'
 
 // Mostra se as recomendacoes vieram de um calculo novo ou do ultimo lote salvo.
 //
-// Este selo e a arquitetura distribuida ficando VISIVEL na tela. Quando o monolito
-// esta fora do ar, o microsservico responde com stale=true e serve o que tem
-// gravado no banco proprio - a tela continua funcionando, com aviso, em vez de
-// mostrar erro.
+// Este selo e a arquitetura distribuida ficando VISIVEL na tela. Enquanto a copia
+// local do catalogo (alimentada por eventos) ainda nao foi sincronizada, o
+// microsservico responde com stale=true e serve o que tem gravado no banco proprio
+// - a tela continua funcionando, com aviso, em vez de mostrar erro.
 //
 // O ponto luminoso a esquerda faz o trabalho que um icone faria, com menos ruido:
-// verde parado quando esta ao vivo, ambar pulsando quando esta degradado. E o
+// verde parado quando esta em dia, ambar pulsando quando esta sincronizando. E o
 // unico movimento da interface, e existe porque sinaliza algo que muda sozinho.
 export default function ServiceStatusBadge({ stale }) {
   const status = serviceStatus(stale)

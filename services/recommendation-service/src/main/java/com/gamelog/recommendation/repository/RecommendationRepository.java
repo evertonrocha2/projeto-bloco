@@ -40,6 +40,11 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     // primeira vez que alguem abre a tela.
     boolean existsByUsername(String username);
 
+    // TP4: quem tem lote gravado - e quem precisa de recalculo quando o catalogo
+    // muda ou quando o snapshot inicial completa a projecao.
+    @Query("select distinct r.username from Recommendation r")
+    List<String> findDistinctUsernames();
+
     // Tira uma recomendacao especifica do lote - o que acontece quando o usuario
     // curte ou descarta um card. Delete em massa, pelo mesmo motivo do de cima:
     // roda o SQL na ordem em que foi chamado, sem ficar pendente no contexto.

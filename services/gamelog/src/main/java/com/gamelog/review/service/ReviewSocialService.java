@@ -2,6 +2,10 @@ package com.gamelog.review.service;
 
 import com.gamelog.identity.domain.User;
 import com.gamelog.identity.repository.UserRepository;
+import com.gamelog.messaging.EventPublisher;
+import com.gamelog.messaging.EventTypes;
+import com.gamelog.messaging.event.ReviewRepliedPayload;
+import com.gamelog.messaging.event.ReviewVotedPayload;
 import com.gamelog.review.domain.Review;
 import com.gamelog.review.domain.ReviewReply;
 import com.gamelog.review.domain.ReviewVote;
@@ -36,15 +40,18 @@ public class ReviewSocialService {
     private final ReviewReplyRepository replyRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final EventPublisher eventPublisher;
 
     public ReviewSocialService(ReviewVoteRepository voteRepository,
                                ReviewReplyRepository replyRepository,
                                ReviewRepository reviewRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               EventPublisher eventPublisher) {
         this.voteRepository = voteRepository;
         this.replyRepository = replyRepository;
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     // ---------- votos ----------
@@ -75,9 +82,11 @@ public class ReviewSocialService {
             } else {
                 voto.changeTo(type);
                 voteRepository.save(voto);
+                publishVote(review, username, type);
             }
         } else {
             voteRepository.save(new ReviewVote(user, review, type));
+            publishVote(review, username, type);
         }
 
         // Devolve o estado ja recalculado: a tela pinta o resultado sem uma
@@ -116,7 +125,38 @@ public class ReviewSocialService {
 
         // O teto de profundidade e aplicado no construtor da entidade.
         ReviewReply reply = replyRepository.save(new ReviewReply(review, user, parent, request.text()));
+
+        eventPublisher.publish(EventTypes.REVIEW_REPLIED, String.valueOf(reviewId), new ReviewRepliedPayload(
+                reviewId,
+                reply.getId(),
+                review.getUser().getUsername(),
+                username,
+                parent == null ? null : parent.getUser().getUsername(),
+                review.getGame().getId(),
+                review.getGame().getTitle(),
+                excerpt(request.text())));
+
         return ReplyResponse.from(reply, List.of());
+    }
+
+    private void publishVote(Review review, String voter, VoteType type) {
+        eventPublisher.publish(EventTypes.REVIEW_VOTED, String.valueOf(review.getId()), new ReviewVotedPayload(
+                review.getId(),
+                review.getUser().getUsername(),
+                voter,
+                type.name(),
+                review.getGame().getId(),
+                review.getGame().getTitle()));
+    }
+
+    // O trecho que vai na notificacao. Mandar o texto inteiro pro broker faria o
+    // evento carregar ate 2000 caracteres que nenhum consumidor mostra.
+    private static String excerpt(String text) {
+        if (text == null) {
+            return "";
+        }
+        String trimmed = text.strip();
+        return trimmed.length() <= 120 ? trimmed : trimmed.substring(0, 117) + "...";
     }
 
     // Apagar a propria resposta.

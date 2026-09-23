@@ -1,5 +1,6 @@
 package com.gamelog.review.repository;
 
+import com.gamelog.integration.snapshot.RatingRow;
 import com.gamelog.review.domain.Review;
 import com.gamelog.review.dto.GameRatingRow;
 import com.gamelog.review.dto.RatedGameRow;
@@ -52,4 +53,13 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, RevisionR
             where r.user.username = :username
             """)
     List<RatedGameRow> findRatedGamesByUsername(@Param("username") String username);
+
+    // TP4: todas as notas do sistema, enxutas, pro snapshot que os consumidores
+    // pedem ao subir pela primeira vez. Tres colunas por review e nenhuma entidade
+    // carregada.
+    @Query("""
+            select new com.gamelog.integration.snapshot.RatingRow(r.user.username, r.game.id, r.rating)
+            from Review r
+            """)
+    List<RatingRow> findAllRatingRows();
 }

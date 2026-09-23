@@ -34,6 +34,12 @@
              compativel com Boot 3.3.x (que e a nossa). Subir pra 2024.0.x
              exigiria subir o Boot pra 3.4.x tambem. -->
         <spring-cloud.version>2023.0.3</spring-cloud.version>
+        <!-- TP4: os testes de integracao sobem um RabbitMQ de verdade num container.
+             O Boot 3.3.5 traria o Testcontainers 1.20.x, que fala com o Docker numa
+             versao de API que o Docker Engine 29 recusa ("client version too old").
+             A 1.21.4 negocia a versao da API e funciona nos dois lados: na maquina
+             de desenvolvimento e no runner do GitHub Actions. -->
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
 
     <!-- A estrutura de pastas separa APLICACOES de INFRAESTRUTURA.
@@ -50,6 +56,8 @@
         <!-- Aplicacoes de negocio -->
         <module>services/gamelog</module>
         <module>services/recommendation-service</module>
+        <!-- TP4: segundo assinante dos eventos do monolito -->
+        <module>services/notification-service</module>
 
         <!-- Infraestrutura Spring Cloud -->
         <module>platform/config-server</module>

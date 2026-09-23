@@ -18,9 +18,13 @@ import com.gamelog.review.domain.VoteType;
 import com.gamelog.review.repository.ReviewReplyRepository;
 import com.gamelog.review.repository.ReviewRepository;
 import com.gamelog.review.repository.ReviewVoteRepository;
+import com.gamelog.messaging.EventPublisher;
+import com.gamelog.messaging.EventTypes;
+import com.gamelog.messaging.event.GameEventPayload;
 import java.util.List;
 import java.util.Set;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +32,11 @@ import org.springframework.stereotype.Component;
 // API externa + um usuario de demonstracao com reviews. Como agora o banco e
 // persistido em arquivo, nas proximas execucoes ele ja vem com dados e o
 // seeder nao faz nada (checagem de count logo abaixo) - e idempotente.
+//
+// app.seed.enabled=false desliga o seeder: os testes de integracao da mensageria
+// sobem o contexto inteiro e nao podem depender da RAWG responder.
 @Component
+@ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true", matchIfMissing = true)
 public class DataSeeder implements CommandLineRunner {
 
     private final GameRepository gameRepository;
@@ -40,6 +48,7 @@ public class DataSeeder implements CommandLineRunner {
     private final GameListRepository gameListRepository;
     private final GameImportService gameImportService;
     private final PasswordEncoder passwordEncoder;
+    private final EventPublisher eventPublisher;
 
     public DataSeeder(GameRepository gameRepository,
                      UserRepository userRepository,
@@ -49,7 +58,8 @@ public class DataSeeder implements CommandLineRunner {
                      ReviewReplyRepository reviewReplyRepository,
                      GameListRepository gameListRepository,
                      GameImportService gameImportService,
-                     PasswordEncoder passwordEncoder) {
+                     PasswordEncoder passwordEncoder,
+                     EventPublisher eventPublisher) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
@@ -59,6 +69,7 @@ public class DataSeeder implements CommandLineRunner {
         this.gameListRepository = gameListRepository;
         this.gameImportService = gameImportService;
         this.passwordEncoder = passwordEncoder;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -81,6 +92,11 @@ public class DataSeeder implements CommandLineRunner {
         List<Game> games = imported.isEmpty()
                 ? gameRepository.saveAll(fallbackGames())
                 : gameRepository.saveAll(imported);
+
+        // TP4: o catalogo inicial tambem e um fato que os outros servicos querem
+        // saber. Quem ja estiver ouvindo recebe os jogos sem precisar pedir snapshot.
+        games.forEach(game -> eventPublisher.publish(
+                EventTypes.GAME_ADDED, String.valueOf(game.getId()), GameEventPayload.from(game)));
 
         // Usuario de demonstracao. Login: demo / demo123
         User demo = userRepository.save(new User(

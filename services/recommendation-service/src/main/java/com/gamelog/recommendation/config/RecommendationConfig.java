@@ -1,6 +1,7 @@
 package com.gamelog.recommendation.config;
 
 import com.gamelog.recommendation.domain.RecommendationEngine;
+import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,5 +18,12 @@ public class RecommendationConfig {
     @Bean
     public RecommendationEngine recommendationEngine() {
         return new RecommendationEngine();
+    }
+
+    // Relogio injetavel: a projecao compara instantes de eventos, e os testes
+    // precisam controlar "agora" pra exercitar evento atrasado.
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
     }
 }

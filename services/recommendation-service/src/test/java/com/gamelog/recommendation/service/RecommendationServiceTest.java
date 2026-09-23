@@ -2,8 +2,8 @@ package com.gamelog.recommendation.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.gamelog.recommendation.client.ActivitySource;
-import com.gamelog.recommendation.client.GameLogSnapshot;
+import com.gamelog.recommendation.activity.ActivitySource;
+import com.gamelog.recommendation.activity.GameLogSnapshot;
 import com.gamelog.recommendation.config.ScoringProperties;
 import com.gamelog.recommendation.domain.CatalogGame;
 import com.gamelog.recommendation.domain.FeedbackVerdict;
@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 // Testa o servico com repositorios REAIS (@DataJpaTest sobre H2) e um duplo
-// escrito a mao no lugar do monolito.
+// escrito a mao no lugar da fonte de atividade.
 //
 // O duplo e uma classe de dez linhas, nao um mock de framework, e isso e
 // deliberado: o que precisa ser controlado no teste e apenas "o monolito
@@ -45,7 +45,7 @@ class RecommendationServiceTest {
     private FakeGameLog gameLog;
     private RecommendationService service;
 
-    // Faz o papel do monolito. snapshot nulo = servico fora do ar.
+    // Faz o papel da projecao local. snapshot nulo = projecao ainda vazia.
     private static class FakeGameLog implements ActivitySource {
         private GameLogSnapshot snapshot;
         private int calls;
@@ -105,7 +105,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("serve o lote gravado sem chamar o monolito de novo")
+    @DisplayName("serve o lote gravado sem ler a projecao de novo")
     void servesStoredBatchWithoutCallingTheMonolithAgain() {
         service.getRecommendations("ana");
         int chamadasDepoisDaPrimeira = gameLog.calls;
@@ -118,7 +118,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("monolito fora do ar: serve o lote anterior marcado como desatualizado")
+    @DisplayName("projecao vazia: serve o lote anterior marcado como desatualizado")
     void monolithDownServesPreviousBatchFlaggedStale() {
         // Este e o comportamento central de resiliencia da entrega: o microsservico
         // continua util quando a dependencia dele cai, porque tem banco proprio.
@@ -132,7 +132,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("monolito fora do ar e sem lote anterior: lista vazia, nao erro")
+    @DisplayName("projecao vazia e sem lote anterior: lista vazia, nao erro")
     void monolithDownWithoutPreviousBatchReturnsEmptyNotError() {
         gameLog.goOffline();
 
@@ -206,7 +206,7 @@ class RecommendationServiceTest {
     }
 
     @Test
-    @DisplayName("perfil de gosto vazio quando o monolito nao responde")
+    @DisplayName("perfil de gosto vazio quando a projecao nao tem dados")
     void tasteProfileIsEmptyWhenMonolithIsUnreachable() {
         gameLog.goOffline();
 
