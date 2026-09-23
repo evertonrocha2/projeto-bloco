@@ -19,8 +19,13 @@ WORKDIR /src
 COPY . .
 
 # O cache de ~/.m2 sobrevive entre builds: so a primeira baixa a internet toda.
+# Tres tentativas: o Maven Central as vezes responde 403/429 a runners de CI
+# compartilhados, e o que ja foi baixado fica no cache pra tentativa seguinte.
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -B -q -pl "${MODULE}" -am package -DskipTests
+    for attempt in 1 2 3; do \
+      mvn -B -q -pl "${MODULE}" -am package -DskipTests && exit 0; \
+      echo "build falhou (tentativa ${attempt}/3)"; sleep 20; \
+    done; exit 1
 
 # Jar em camadas: dependencias (mudam raramente) separadas do codigo (muda a cada
 # commit). No push, so a camada "application" - alguns KB - sobe de novo.

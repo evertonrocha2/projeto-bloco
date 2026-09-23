@@ -33,7 +33,10 @@ jobs:
       contents: read
       packages: write
     strategy:
-      fail-fast: true
+      # Uma imagem que falha por instabilidade externa nao cancela as outras, e
+      # menos builds simultaneos baixando do Maven Central evita o throttling.
+      fail-fast: false
+      max-parallel: 3
       matrix:
         include:
           - { name: config-server, context: ., module: platform/config-server }
