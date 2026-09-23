@@ -437,6 +437,12 @@ os casos em que a ordem ainda assim se quebra (replay da DLQ).
 | Erro transitório no consumidor | 3 tentativas com backoff exponencial. |
 | Consumidor novo / banco apagado | Snapshot por request/reply + eventos. |
 
+Os quatro primeiros cenários viraram teste automatizado no TP5:
+[`scripts/resilience-test.sh`](../scripts/resilience-test.sh) derruba de verdade
+cada container da stack do Docker Compose e confere o comportamento pela API
+(o de "serviço consumidor fora" é exercitado com o notification-service). Roda
+no job `e2e` do CI a cada push — ver [`IMPLANTACAO.md`](IMPLANTACAO.md).
+
 **Transações**
 
 - Dentro do monólito: transação local (JPA) cobre estado + outbox.

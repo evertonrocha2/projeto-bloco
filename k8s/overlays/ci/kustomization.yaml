@@ -2,7 +2,7 @@
 #
 # O runner tem 4 vCPU / 16 GB: uma replica de cada servico basta pra provar que
 # os manifestos sobem e o sistema funciona. A imagem de cada servico e trocada
-# pelo pipeline ("kustomize edit set image") pra tag do commit no GHCR - o que
+# pelo pipeline (sed em "newTag: latest") pra tag do commit no GHCR - o que
 # roda no teste e exatamente o que foi publicado.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
