@@ -1,0 +1,10 @@
+# Cluster kind do pipeline de CD. Os NodePorts do overlay (k8s/overlays/local)
+# viram portas do runner, entao os testes chamam localhost:30080 direto - sem
+# port-forward, que prende numa replica so e esconderia problema de balanceamento.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - { containerPort: 30080, hostPort: 30080 }   # api-gateway
+      - { containerPort: 30000, hostPort: 30000 }   # frontend

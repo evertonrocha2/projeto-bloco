@@ -1,0 +1,109 @@
+# Integracao continua: todo push e todo pull request.
+#
+#   backend ..... testes de todos os modulos Maven (unidade, JPA, contrato e
+#                 integracao com RabbitMQ real via Testcontainers)
+#   frontend .... testes (vitest) e build de producao
+#   e2e ......... sobe o sistema INTEIRO no docker compose (Postgres, RabbitMQ,
+#                 observabilidade, 6 servicos, front) e roda o smoke test e os
+#                 cenarios de falha pelo gateway, como um usuario faria
+#
+# O e2e so roda se as duas suites passarem: nao adianta subir 13 containers pra
+# descobrir um erro que um teste de unidade acharia em segundos.
+name: CI
+
+on:
+  push:
+    branches: [main, "tp*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Maven)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: mvn verify
+        run: mvn -B -ntp verify
+      - name: Relatorios de teste
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: "**/target/surefire-reports/*.txt"
+          if-no-files-found: ignore
+      - name: Resumo dos testes
+        if: always()
+        run: |
+          {
+            echo "### Testes do backend"
+            echo "| modulo | testes | falhas | erros |"
+            echo "|---|---|---|---|"
+            for dir in $(find . -path '*/target/surefire-reports' -type d | sort); do
+              module="${dir#./}"; module="${module%/target/surefire-reports}"
+              grep -h "Tests run:" "$dir"/*.txt | sed -E 's/.*Tests run: ([0-9]+), Failures: ([0-9]+), Errors: ([0-9]+).*/\1 \2 \3/' \
+                | awk -v m="$module" '{t+=$1; f+=$2; e+=$3} END {printf "| %s | %d | %d | %d |\n", m, t, f, e}'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  frontend:
+    name: Frontend (Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    name: E2E (docker compose)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build das imagens
+        run: docker compose build
+      - name: Subir o sistema
+        # --wait: so volta quando TODOS os healthchecks passam (ou estoura o prazo).
+        run: docker compose up -d --wait --wait-timeout 600
+      - name: Smoke test
+        run: ./scripts/smoke-test.sh
+      - name: Cenarios de falha
+        run: ./scripts/resilience-test.sh
+      - name: Trace ponta a ponta no Zipkin
+        # Um trace que comeca no gateway tem que chegar ao consumidor dos eventos.
+        run: |
+          traces="$(curl -sf 'http://localhost:9411/api/v2/traces?serviceName=notification-service&limit=100')"
+          echo "$traces" | grep -q '"serviceName":"api-gateway"' || { echo "nenhum trace atravessou gateway -> consumidor"; exit 1; }
+          echo "$traces" | grep -q '"name":"outbox relay' || { echo "trace nao passou pelo outbox relay"; exit 1; }
+          echo "ok: trace gateway -> gamelog -> outbox -> RabbitMQ -> notification-service"
+      - name: Logs dos containers (em caso de falha)
+        if: failure()
+        run: docker compose logs --no-color > compose-logs.txt
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: compose-logs
+          path: compose-logs.txt
+      - name: Derrubar
+        if: always()
+        run: docker compose down -v
