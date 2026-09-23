@@ -35,9 +35,10 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Nunca como root: se alguem explorar uma falha na aplicacao, cai num usuario
-# sem permissao pra nada alem da propria pasta.
-RUN addgroup -S gamelog && adduser -S gamelog -G gamelog \
- && mkdir -p /app/data /app/uploads && chown -R gamelog:gamelog /app
+# sem permissao pra nada alem da propria pasta. UID numerico porque o Kubernetes
+# (runAsNonRoot) so consegue conferir "nao e root" com numero, nao com nome.
+RUN addgroup -S -g 10001 gamelog && adduser -S -u 10001 -G gamelog gamelog \
+ && mkdir -p /app/data /app/uploads && chown -R 10001:10001 /app
 
 COPY --from=build /layers/dependencies/ ./
 COPY --from=build /layers/spring-boot-loader/ ./
@@ -46,7 +47,7 @@ COPY --from=build /layers/application/ ./
 # Vazio em todo servico menos no config-server, que serve os arquivos da pasta.
 COPY --from=build /extra/ ./
 
-USER gamelog
+USER 10001
 
 # MaxRAMPercentage: a JVM dimensiona o heap pelo limite do CONTAINER (e nao pela
 # RAM da maquina). ExitOnOutOfMemoryError: sem memoria, morrer e deixar o

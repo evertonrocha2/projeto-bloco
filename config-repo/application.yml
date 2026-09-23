@@ -18,6 +18,9 @@ eureka:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
+    # TP5: o padrao e 30 s. Num rolling update do Kubernetes, o gateway seguiria
+    # mandando requisicao pro pod que ja saiu durante ate meio minuto.
+    registry-fetch-interval-seconds: 5
   instance:
     # Em ambiente local o hostname da maquina as vezes nao resolve; o IP e mais
     # confiavel pra um servico achar o outro.
@@ -30,7 +33,9 @@ management:
         # health: usado pra saber se o servico esta de pe.
         # refresh: e o que permite recarregar a configuracao sem reiniciar.
         # prometheus (TP5): as metricas no formato que o Prometheus raspa.
-        include: health,info,refresh,prometheus
+        # serviceregistry (TP5): o preStop do Kubernetes marca a instancia como
+        # DOWN no Eureka antes de o pod parar (ver k8s/base/services).
+        include: health,info,refresh,prometheus,serviceregistry
   endpoint:
     health:
       show-details: always
@@ -76,9 +81,23 @@ management:
       # Quatro spans por requisicao so pra dizer "passou pela cadeia de filtros".
       # O tempo da seguranca continua dentro do span HTTP.
       spring.security: false
+# TP5: desligamento gracioso. No SIGTERM (rolling update, scale down) o servico
+# para de aceitar requisicao nova, termina as que estao em andamento e so entao
+# encerra; os listeners do RabbitMQ terminam a mensagem atual e devolvem as
+# nao confirmadas pra fila. Nada se perde num deploy.
+server:
+  shutdown: graceful
+
 # TP4: broker comum a todos os servicos que trocam eventos. As variaveis de
 # ambiente (Docker/Kubernetes) tem prioridade; o padrao serve pro ambiente local.
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  cloud:
+    loadbalancer:
+      cache:
+        # Mesmo motivo do registry-fetch-interval acima.
+        ttl: 5s
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}

@@ -1,0 +1,43 @@
+# Escala automatica por CPU (precisa do metrics-server no cluster).
+#
+# So os servicos SEM estado local entram: gateway (sem estado nenhum) e
+# recommendation-service (recalculo e CPU pura - pontuar o catalogo inteiro pra
+# cada usuario). O monolito fica de fora pelos motivos em services/gamelog.yaml;
+# o notification-service tambem, porque a fila dele e single active consumer e
+# replica a mais nao aumenta vazao.
+#
+# Os limites de descida sao conservadores (5 min de estabilizacao): subir rapido
+# e barato, descer rapido demais gera "pisca-pisca" de pods sob carga oscilante.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: api-gateway }
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: recommendation-service
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: recommendation-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300

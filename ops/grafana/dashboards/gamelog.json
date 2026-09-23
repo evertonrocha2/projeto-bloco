@@ -13,7 +13,7 @@
         "label": "Servico",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "query": "label_values(up{job=\"spring\"}, application)",
+        "query": "label_values(jvm_memory_used_bytes, application)",
         "includeAll": true,
         "multi": true,
         "current": { "text": "All", "value": "$__all" },

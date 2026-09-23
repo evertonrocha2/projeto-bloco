@@ -1,0 +1,56 @@
+# API Gateway: a unica porta de entrada. Sem estado, entao escala horizontal
+# livre (HPA em autoscaling.yaml). Exposto pra fora do cluster pelo front (nginx
+# repassa /api) e, direto, pelo NodePort do overlay.
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  selector: { app: api-gateway }
+  ports:
+    - { name: http, port: 8090 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: api-gateway }
+  strategy:
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+  template:
+    metadata:
+      labels: { app: api-gateway }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8090"
+    spec:
+      securityContext: { runAsNonRoot: true }
+      containers:
+        - name: api-gateway
+          image: gamelog/api-gateway:dev
+          ports:
+            - { name: http, containerPort: 8090 }
+          envFrom:
+            - configMapRef: { name: gamelog-env }
+          # Tempo pro Service do Kubernetes tirar o pod dos endpoints antes do SIGTERM.
+          lifecycle:
+            preStop:
+              exec: { command: ["sleep", "5"] }
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 100m, memory: 320Mi }
+            limits: { memory: 640Mi }
+          securityContext: { allowPrivilegeEscalation: false }

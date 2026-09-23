@@ -1,0 +1,44 @@
+# Loki em modo monolitico com a configuracao local da imagem (filesystem). Os
+# servicos EMPURRAM os logs pra ca (appender loki4j, perfil "loki"); nao ha
+# agente coletor por no. Em producao o caminho usual e o inverso - o app escreve
+# no stdout e um DaemonSet (Promtail/Alloy) coleta - o que tambem pega log de
+# quem nao e Java. Ver docs/IMPLANTACAO.md.
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+spec:
+  selector: { app: loki }
+  ports:
+    - { name: http, port: 3100 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: loki }
+  template:
+    metadata:
+      labels: { app: loki }
+    spec:
+      containers:
+        - name: loki
+          image: grafana/loki:3.1.1
+          args: ["-config.file=/etc/loki/local-config.yaml"]
+          ports:
+            - { name: http, containerPort: 3100 }
+          readinessProbe:
+            httpGet: { path: /ready, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: data, mountPath: /loki }
+      volumes:
+        - name: data
+          emptyDir: {}

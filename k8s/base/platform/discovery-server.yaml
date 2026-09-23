@@ -1,0 +1,51 @@
+# Eureka. Continua existindo no Kubernetes - que tem descoberta propria (DNS de
+# Service) - porque o gateway e o balanceamento do Spring Cloud dependem dele
+# (lb://gamelog). Trocar pelo spring-cloud-kubernetes seria o proximo passo; ver
+# a discussao em docs/IMPLANTACAO.md.
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-server
+spec:
+  selector: { app: discovery-server }
+  ports:
+    - { name: http, port: 8761 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: discovery-server }
+  template:
+    metadata:
+      labels: { app: discovery-server }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8761"
+    spec:
+      securityContext: { runAsNonRoot: true }
+      containers:
+        - name: discovery-server
+          image: gamelog/discovery-server:dev
+          ports:
+            - { name: http, containerPort: 8761 }
+          envFrom:
+            - configMapRef: { name: gamelog-env }
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 100m, memory: 320Mi }
+            limits: { memory: 640Mi }
+          securityContext: { allowPrivilegeEscalation: false }

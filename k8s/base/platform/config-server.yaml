@@ -1,0 +1,57 @@
+# Config Server. Os arquivos que ele serve vem do ConfigMap "config-repo"
+# (gerado de config-repo/ na raiz), montado por cima da copia embutida na imagem.
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server
+spec:
+  selector: { app: config-server }
+  ports:
+    - { name: http, port: 8888 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: config-server }
+  template:
+    metadata:
+      labels: { app: config-server }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8888"
+    spec:
+      securityContext: { runAsNonRoot: true }
+      containers:
+        - name: config-server
+          image: gamelog/config-server:dev
+          ports:
+            - { name: http, containerPort: 8888 }
+          envFrom:
+            - configMapRef: { name: gamelog-env }
+          env:
+            # Substitui a lista inteira: sem "native" o Config Server procura Git.
+            - { name: SPRING_PROFILES_ACTIVE, value: "native,loki" }
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          securityContext: { allowPrivilegeEscalation: false }
+          volumeMounts:
+            - { name: config-repo, mountPath: /app/config-repo, readOnly: true }
+      volumes:
+        - name: config-repo
+          configMap: { name: config-repo }

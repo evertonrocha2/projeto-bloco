@@ -33,6 +33,22 @@ spring:
         # VITE_API_URL, como o README documenta) pararia de funcionar.
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
 
+        # TP5: repete GET que falhou por conexao recusada ou 502/503 - cada
+        # tentativa passa pelo load balancer de novo e tende a cair em OUTRA
+        # instancia. Cobre a janela em que uma instancia esta saindo (deploy,
+        # scale down) e o registro ainda nao refletiu. So GET: repetir um POST
+        # poderia criar a mesma review duas vezes.
+        - name: Retry
+          args:
+            retries: 2
+            methods: GET
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+            exceptions: java.io.IOException,java.util.concurrent.TimeoutException
+            backoff:
+              firstBackoff: 100ms
+              maxBackoff: 500ms
+              factor: 2
+
       # As ROTAS ficam neste arquivo local, e nao no Config Server, de proposito:
       # sem elas o gateway sobe sem saber rotear nada, e o sistema inteiro fica
       # inacessivel. Uma dependencia dessa gravidade na inicializacao nao vale a
