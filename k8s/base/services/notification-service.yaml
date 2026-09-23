@@ -1,0 +1,72 @@
+# Notificacoes. Duas replicas por DISPONIBILIDADE, nao por vazao: a fila e
+# single active consumer (ordem por usuario importa), entao uma processa e a
+# outra assume em segundos se a primeira cair. A API HTTP (leitura) atende nas duas.
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+spec:
+  selector: { app: notification-service }
+  ports:
+    - { name: http, port: 8082 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: notification-service }
+  strategy:
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+  template:
+    metadata:
+      labels: { app: notification-service }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8082"
+    spec:
+      securityContext: { runAsNonRoot: true }
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: notification-service
+          image: gamelog/notification-service:dev
+          ports:
+            - { name: http, containerPort: 8082 }
+          envFrom:
+            - configMapRef: { name: gamelog-env }
+          env:
+            - { name: DB_URL, value: "jdbc:postgresql://postgres:5432/notifications" }
+            - name: DB_USERNAME
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: DB_USERNAME } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: DB_PASSWORD } }
+            - name: RABBITMQ_USERNAME
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: RABBITMQ_USERNAME } }
+            - name: RABBITMQ_PASSWORD
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: RABBITMQ_PASSWORD } }
+          # Saida limpa do balanceamento: marca a instancia DOWN no Eureka e espera
+          # os caches dos clientes (5 s de registro + 5 s do load balancer) antes
+          # de o SIGTERM chegar. Sem isto o Spring para o servidor web ANTES de se
+          # desregistrar, e o gateway ainda manda requisicao pro pod que saiu
+          # (medido: 2 de 8 leituras com erro durante um rollout).
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "wget -q -O /dev/null --header 'Content-Type: application/json' --post-data '{\"status\":\"DOWN\"}' http://127.0.0.1:8082/actuator/serviceregistry; sleep 12"]
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 100m, memory: 384Mi }
+            limits: { memory: 640Mi }
+          securityContext: { allowPrivilegeEscalation: false }

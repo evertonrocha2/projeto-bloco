@@ -1,0 +1,15 @@
+# Cluster local (Docker Desktop, kind, minikube). Imagens construidas na maquina
+# (gamelog/<servico>:dev) e servicos de entrada expostos por NodePort.
+#
+#   ./scripts/k8s-deploy-local.sh          # build + carga das imagens + apply
+#
+# Em cluster kind (inclusive o do Docker Desktop recente) o NodePort nao chega ao
+# host sem mapeamento de porta; o script usa port-forward nesse caso.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  - path: nodeports.yaml

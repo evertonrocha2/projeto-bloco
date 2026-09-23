@@ -1,0 +1,130 @@
+# Entrega continua: a cada push na main (e sob demanda).
+#
+#   images ...... constroi e publica as 7 imagens no GitHub Container Registry,
+#                 com a tag do commit (imutavel) e "latest"
+#   deploy ...... cria um cluster Kubernetes efemero (kind), aplica
+#                 k8s/overlays/ci apontando pras imagens RECEM-PUBLICADAS e roda
+#                 o smoke test e o teste de rolling update contra o cluster
+#
+# O deploy no kind e o "ambiente de homologacao" do pipeline: prova que os
+# manifestos sobem, que as imagens publicadas funcionam juntas e que um rolling
+# update nao perde evento. Pra um cluster real, o mesmo job trocaria o kind por um
+# kubeconfig guardado em secret e um environment com aprovacao - ver
+# docs/IMPLANTACAO.md.
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  images:
+    name: Imagem ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { name: config-server, context: ., module: platform/config-server }
+          - { name: discovery-server, context: ., module: platform/discovery-server }
+          - { name: api-gateway, context: ., module: platform/api-gateway }
+          - { name: gamelog, context: ., module: services/gamelog }
+          - { name: recommendation-service, context: ., module: services/recommendation-service }
+          - { name: notification-service, context: ., module: services/notification-service }
+          - { name: frontend, context: frontend, module: "" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          build-args: MODULE=${{ matrix.module }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/gamelog-${{ matrix.name }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/gamelog-${{ matrix.name }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          # Cache de camadas por imagem: rebuild so do que mudou.
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  deploy:
+    name: Deploy no Kubernetes (kind) + testes
+    needs: images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cluster kind
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: gamelog
+          config: .github/kind-config.yaml
+
+      - name: Apontar o overlay pras imagens deste commit
+        run: |
+          sed -i "s/newTag: latest/newTag: ${GITHUB_SHA}/" k8s/overlays/ci/kustomization.yaml
+          grep newTag k8s/overlays/ci/kustomization.yaml
+
+      - name: Credencial pra puxar do GHCR
+        run: |
+          kubectl create namespace gamelog
+          kubectl -n gamelog create secret docker-registry ghcr \
+            --docker-server=ghcr.io --docker-username="${{ github.actor }}" \
+            --docker-password="${{ secrets.GITHUB_TOKEN }}"
+          kubectl -n gamelog patch serviceaccount default -p '{"imagePullSecrets":[{"name":"ghcr"}]}'
+
+      - name: kubectl apply -k k8s/overlays/ci
+        run: kubectl apply -k k8s/overlays/ci
+
+      - name: Esperar os workloads
+        run: |
+          for s in postgres rabbitmq; do kubectl -n gamelog rollout status statefulset/$s --timeout=300s; done
+          for d in config-server discovery-server gamelog recommendation-service notification-service \
+                   api-gateway frontend zipkin loki prometheus grafana; do
+            kubectl -n gamelog rollout status deployment/$d --timeout=600s
+          done
+
+      - name: Smoke test no cluster
+        run: BASE_URL=http://localhost:30080 TIMEOUT=120 ./scripts/smoke-test.sh
+
+      - name: Rolling update sem perda de evento
+        run: BASE_URL=http://localhost:30080 ./scripts/k8s-rollout-test.sh
+
+      - name: Estado do cluster
+        if: always()
+        run: |
+          kubectl -n gamelog get pods,svc,hpa -o wide
+          echo "### Imagens em execucao" >> "$GITHUB_STEP_SUMMARY"
+          kubectl -n gamelog get pods -o jsonpath='{range .items[*]}{.spec.containers[0].image}{"\n"}{end}' \
+            | sort -u | sed 's/^/- `/; s/$/`/' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Logs (em caso de falha)
+        if: failure()
+        run: |
+          kubectl -n gamelog get events --sort-by=.lastTimestamp | tail -50
+          for d in config-server discovery-server gamelog recommendation-service notification-service api-gateway; do
+            echo "===== $d"; kubectl -n gamelog logs deployment/$d --tail=100 || true
+          done

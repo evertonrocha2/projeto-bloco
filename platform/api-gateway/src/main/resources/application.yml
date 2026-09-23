@@ -11,7 +11,7 @@ spring:
     name: api-gateway
 
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
 
   cloud:
     gateway:
@@ -32,6 +32,22 @@ spring:
         # o CORS do monolito, mas ai apontar o front direto pra 8080 (via
         # VITE_API_URL, como o README documenta) pararia de funcionar.
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+        # TP5: repete GET que falhou por conexao recusada ou 502/503 - cada
+        # tentativa passa pelo load balancer de novo e tende a cair em OUTRA
+        # instancia. Cobre a janela em que uma instancia esta saindo (deploy,
+        # scale down) e o registro ainda nao refletiu. So GET: repetir um POST
+        # poderia criar a mesma review duas vezes.
+        - name: Retry
+          args:
+            retries: 2
+            methods: GET
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+            exceptions: java.io.IOException,java.util.concurrent.TimeoutException
+            backoff:
+              firstBackoff: 100ms
+              maxBackoff: 500ms
+              factor: 2
 
       # As ROTAS ficam neste arquivo local, e nao no Config Server, de proposito:
       # sem elas o gateway sobe sem saber rotear nada, e o sistema inteiro fica
@@ -70,14 +86,17 @@ spring:
             # CORS resolvido AQUI, num lugar so. Como o navegador so conversa com o
             # gateway, os servicos de tras nao precisam saber que existe um front em
             # outra porta.
-            allowedOrigins: "http://localhost:5173"
+            # TP5: lista separada por virgula, vinda do ambiente. Em Docker o front
+            # e servido pelo nginx na mesma origem da API e o CORS nem entra em jogo;
+            # a lista so importa pro Vite em desenvolvimento.
+            allowedOrigins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
             allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
             allowedHeaders: "*"
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
 
@@ -87,7 +106,9 @@ management:
       exposure:
         # gateway: lista as rotas ativas em /actuator/gateway/routes - util pra
         # conferir o roteamento numa demonstracao.
-        include: health,info,gateway
+        include: health,info,gateway,prometheus
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true

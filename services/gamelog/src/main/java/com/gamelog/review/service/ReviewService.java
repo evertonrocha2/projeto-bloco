@@ -13,7 +13,9 @@ import com.gamelog.review.dto.GameRatingRow;
 import com.gamelog.review.dto.RatingStats;
 import com.gamelog.review.dto.ReviewRevisionResponse;
 import com.gamelog.review.dto.ReviewResponse;
+import com.gamelog.review.repository.ReviewReplyRepository;
 import com.gamelog.review.repository.ReviewRepository;
+import com.gamelog.review.repository.ReviewVoteRepository;
 import com.gamelog.shared.BadRequestException;
 import com.gamelog.shared.NotFoundException;
 import org.springframework.stereotype.Service;
@@ -40,15 +42,21 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
+    private final ReviewReplyRepository replyRepository;
+    private final ReviewVoteRepository voteRepository;
     private final EventPublisher eventPublisher;
 
     public ReviewService(ReviewRepository reviewRepository,
                          UserRepository userRepository,
                          GameRepository gameRepository,
+                         ReviewReplyRepository replyRepository,
+                         ReviewVoteRepository voteRepository,
                          EventPublisher eventPublisher) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.gameRepository = gameRepository;
+        this.replyRepository = replyRepository;
+        this.voteRepository = voteRepository;
         this.eventPublisher = eventPublisher;
     }
 
@@ -104,6 +112,13 @@ public class ReviewService {
         // O payload e montado ANTES do delete: depois dele a review nao pode mais
         // ser lida, e o consumidor precisa saber qual nota tirar da conta.
         ReviewEventPayload lastState = ReviewEventPayload.from(review);
+        // A conversa sai antes da review, senao as chaves estrangeiras recusam o
+        // DELETE. Respostas vao da mais nova pra mais antiga: uma resposta
+        // aninhada e sempre posterior a que ela responde, entao a filha sai antes
+        // da mae. Uma a uma (e nao DELETE em massa) porque ReviewReply e @Audited
+        // e o historico precisa registrar a remocao.
+        voteRepository.deleteAll(voteRepository.findByReviewId(reviewId));
+        replyRepository.deleteAll(replyRepository.findByReviewIdOrderByCreatedAtDescIdDesc(reviewId));
         reviewRepository.delete(review);
         eventPublisher.publish(EventTypes.REVIEW_DELETED, String.valueOf(reviewId), lastState);
     }

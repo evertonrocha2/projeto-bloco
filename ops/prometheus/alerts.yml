@@ -1,0 +1,37 @@
+# Regras de alerta. Sem Alertmanager configurado elas aparecem em
+# http://localhost:9090/alerts (estado pending/firing) - o suficiente pra
+# demonstrar; em producao o Alertmanager mandaria pro canal da equipe.
+groups:
+  - name: gamelog
+    rules:
+      - alert: ServicoFora
+        expr: up{job="spring"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.instance }} nao responde ao scrape ha 1 minuto"
+
+      # Outbox crescendo = eventos gravados que nao chegam ao broker.
+      - alert: OutboxAcumulando
+        expr: gamelog_outbox_pending > 100
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $value }} eventos presos no outbox (broker fora ou relay travado)"
+
+      # Mensagem em DLQ e mensagem que falhou 3 vezes: alguem precisa olhar.
+      - alert: MensagensNaDLQ
+        expr: sum by (queue) (rabbitmq_queue_messages{queue=~".*\\.dlq"}) > 0
+        for: 1m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $value }} mensagens na {{ $labels.queue }}"
+
+      - alert: TaxaDeErro5xx
+        expr: |
+          sum by (application) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            / sum by (application) (rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.application }} com mais de 5% de respostas 5xx"

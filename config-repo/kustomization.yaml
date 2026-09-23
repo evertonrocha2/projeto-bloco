@@ -1,0 +1,17 @@
+# No Kubernetes esta pasta vira um ConfigMap montado em /app/config-repo no
+# config-server (k8s/base inclui este diretorio). Mudar um peso do algoritmo e
+# "kubectl apply -k" + POST /actuator/refresh, sem rebuild de imagem.
+#
+# O Config Server so serve arquivos com nome de aplicacao (gamelog.yml,
+# application.yml...); este arquivo nao corresponde a nenhuma e e ignorado por ele.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+configMapGenerator:
+  - name: config-repo
+    files:
+      - application.yml
+      - api-gateway.yml
+      - discovery-server.yml
+      - gamelog.yml
+      - recommendation-service.yml

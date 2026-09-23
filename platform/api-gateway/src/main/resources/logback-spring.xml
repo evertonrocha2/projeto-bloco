@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TP5: agregacao de logs.
+
+     Sem o perfil "loki", nada muda: o console do Spring Boot, com o traceId na
+     linha (padrao do Spring Boot 3.3 com Micrometer Tracing). Com o perfil ligado - Docker e
+     Kubernetes ligam via SPRING_PROFILES_ACTIVE - cada linha tambem vai pro Loki.
+
+     Labels sao poucas e de cardinalidade baixa (app, nivel, host) de proposito: o
+     Loki indexa label, nao texto, e um label com traceId criaria um fluxo novo por
+     requisicao. O traceId vai no TEXTO da linha; o Grafana extrai com regex e vira
+     link pro Zipkin. Arquivo identico nos seis servicos. -->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+
+    <springProfile name="loki">
+        <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+            <http>
+                <url>${LOKI_URL:-http://loki:3100/loki/api/v1/push}</url>
+            </http>
+            <format>
+                <label>
+                    <pattern>app=${appName},host=${HOSTNAME:-local},level=%level</pattern>
+                    <readMarkers>true</readMarkers>
+                </label>
+                <message>
+                    <pattern>%-5level [%thread] %logger{36} traceId=%X{traceId:-} spanId=%X{spanId:-} - %msg %ex</pattern>
+                </message>
+            </format>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="LOKI"/>
+        </root>
+    </springProfile>
+</configuration>

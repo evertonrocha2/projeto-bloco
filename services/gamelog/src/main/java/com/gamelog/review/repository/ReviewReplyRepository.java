@@ -18,4 +18,6 @@ public interface ReviewReplyRepository extends JpaRepository<ReviewReply, Long> 
     // Se alguem ja respondeu esta resposta. Decide entre apagar de verdade e
     // virar lapide.
     boolean existsByParentId(Long parentId);
+
+    List<ReviewReply> findByReviewIdOrderByCreatedAtDescIdDesc(Long reviewId);
 }

@@ -21,8 +21,25 @@ Detalhes em [`docs/PERSISTENCIA.md`](docs/PERSISTENCIA.md).
 usuário. Integrado com **Spring Cloud**: Config Server (configuração central que
 muda o algoritmo sem reiniciar), Eureka (descoberta), API Gateway (porta única) e
 OpenFeign + Resilience4j (comunicação com disjuntor — com o monólito fora do ar, a
-tela continua funcionando e avisa). São 101 testes no total. Detalhes em
+tela continua funcionando e avisa). Detalhes em
 [`docs/MICROSSERVICO.md`](docs/MICROSSERVICO.md).
+
+**TP4 — Arquitetura orientada a eventos:** os serviços passam a conversar por
+**RabbitMQ** (Spring AMQP). O monólito publica eventos de domínio por
+*Transactional Outbox*; o microsserviço de recomendações mantém uma projeção
+local e recalcula por comando (fila de trabalho); um novo
+**notification-service** assina os mesmos eventos (caixa de entrada, feed e sino
+no front). Idempotência, DLQ, *single active consumer* e bootstrap por snapshot.
+Detalhes em [`docs/EVENTOS.md`](docs/EVENTOS.md).
+
+**TP5 — Implantação e manutenção em produção:** imagens **Docker**, sistema
+completo no **docker compose** (com Postgres), manifestos **Kubernetes** com
+sondas e **HPA**, **tracing distribuído** (Zipkin, atravessando o RabbitMQ e o
+outbox), métricas e alertas no **Prometheus**, logs centralizados no **Loki**,
+dashboard no **Grafana** e **CI/CD no GitHub Actions** (testes, E2E, imagens no
+GHCR e deploy em cluster kind). Detalhes em
+[`docs/IMPLANTACAO.md`](docs/IMPLANTACAO.md); histórico em
+[`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
@@ -31,31 +48,76 @@ tela continua funcionando e avisa). São 101 testes no total. Detalhes em
 | Camada | Tecnologia |
 |--------|-----------|
 | Back-end | Java 21, Spring Boot 3.3, Spring Web, Spring Data JPA, Spring Security |
-| Distribuído | Spring Cloud 2023.0.3 — Config Server, Eureka, Gateway, OpenFeign, Resilience4j |
-| Banco | H2 persistido em arquivo — **dois bancos independentes**, um por serviço |
+| Distribuído | Spring Cloud 2023.0.3 — Config Server, Eureka, Gateway |
+| Mensageria | RabbitMQ 3.13 + Spring AMQP (outbox, DLQ, request/reply) |
+| Banco | PostgreSQL 16 (compose/Kubernetes) ou H2 em arquivo (sem Docker) — **um banco por serviço** |
+| Containers | Docker (multi-stage, jar em camadas), docker compose, Kubernetes + kustomize |
+| Observabilidade | Micrometer Tracing + Zipkin, Prometheus, Loki (loki4j), Grafana |
+| CI/CD | GitHub Actions, GitHub Container Registry, kind |
 | Histórico | Hibernate Envers + Spring Data Envers |
 | Autenticação | JWT + BCrypt |
 | API externa | RAWG (catálogo de jogos) |
 | Build back-end | Maven (projeto multi-módulo) |
 | Front-end | React 18 + Vite + React Router + Tailwind CSS 4 |
-| Testes | JUnit 5 + AssertJ (back-end), Vitest (front-end) |
+| Testes | JUnit 5 + AssertJ + Testcontainers (back-end), Vitest (front-end), scripts de sistema |
 
 ---
 
 ## Como rodar
 
-O sistema tem **cinco aplicações Java**. Cada uma sobe com `mvn spring-boot:run`
+### Com Docker (recomendado)
+
+Precisa só do Docker. Sobe os 13 containers e espera todos ficarem saudáveis:
+
+```bash
+docker compose up -d --build --wait
+./scripts/smoke-test.sh          # opcional: confere o fluxo inteiro pela API
+```
+
+| Endereço | O que é |
+|----------|---------|
+| http://localhost:3000 | **Front-end** |
+| http://localhost:8090 | API Gateway |
+| http://localhost:8761 | Painel do Eureka |
+| http://localhost:15672 | Painel do RabbitMQ (`gamelog` / `gamelog`) |
+| http://localhost:9411 | Zipkin (traces) |
+| http://localhost:9090 | Prometheus (métricas e alertas) |
+| http://localhost:3001 | Grafana (`admin` / `admin`) — dashboard "GameLog - visão geral" |
+
+Portas ocupadas por outro projeto? Toda porta do host é uma variável, por
+exemplo `EUREKA_HOST_PORT=18761 docker compose up -d`. Para parar:
+`docker compose down` (mantém os dados) ou `docker compose down -v` (apaga).
+
+### No Kubernetes (local)
+
+Com o Kubernetes do Docker Desktop, kind ou minikube:
+
+```bash
+./scripts/k8s-deploy-local.sh    # build, carrega as imagens, metrics-server, apply -k, espera
+kubectl -n gamelog get pods,hpa
+```
+
+Front em http://localhost:30000 e gateway em http://localhost:30080 (ou
+`kubectl -n gamelog port-forward svc/api-gateway 18090:8090`). Detalhes,
+monitoramento e CI/CD em [`docs/IMPLANTACAO.md`](docs/IMPLANTACAO.md).
+
+### Sem Docker (desenvolvimento)
+
+Cada aplicação Java sobe com `mvn spring-boot:run`
 **de dentro da pasta do módulo** — isso importa: o Config Server procura os `.yml`
 em `../../config-repo`, e cada serviço com banco cria `./data` relativo ao
 diretório atual.
 
-Abra um terminal por serviço, nesta ordem:
+Suba o RabbitMQ e abra um terminal por serviço, nesta ordem:
 
 ```bash
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.13-management-alpine
+
 cd platform/config-server          && mvn spring-boot:run   # 8888
 cd platform/discovery-server       && mvn spring-boot:run   # 8761
-cd services/gamelog                         && mvn spring-boot:run   # 8080
+cd services/gamelog                && mvn spring-boot:run   # 8080
 cd services/recommendation-service && mvn spring-boot:run   # 8081
+cd services/notification-service   && mvn spring-boot:run   # 8082
 cd platform/api-gateway            && mvn spring-boot:run   # 8090
 ```
 
@@ -85,6 +147,8 @@ navegar pro catálogo, abrir um jogo, ver perfis, fazer login e — logado — a
 | 8090 | **API Gateway** — é aqui que o front bate | sim |
 | 8080 | Monólito GameLog | sim |
 | 8081 | Microsserviço de recomendações | só pra tela de recomendados |
+| 8082 | Serviço de notificações | só pro sino e o feed |
+| 5672 | RabbitMQ | não — sem ele os eventos esperam no outbox |
 | 8761 | Eureka (descoberta) | sim, pro gateway achar os serviços |
 | 8888 | Config Server | não — todo serviço sobe sem ele, com config local |
 
@@ -123,6 +187,7 @@ serviço com banco cria `./data` relativo ao diretório atual.
 | Eureka | `platform/discovery-server` |
 | Monólito | `services/gamelog` |
 | Recomendações | `services/recommendation-service` |
+| Notificações | `services/notification-service` |
 | API Gateway | `platform/api-gateway` |
 
 ### Endereços úteis
@@ -166,7 +231,9 @@ candidatos suficientes pra funcionar mesmo sem chave de API.
 - **Recomendações personalizadas** (microsserviço): jogos indicados por afinidade
   de gênero, com a pontuação e o *porquê* de cada indicação, gráfico do seu perfil
   de gosto, e botões de "gostei" / "não me interessa" que ajustam as próximas
-  rodadas. Continua funcionando — avisando — se o catálogo sair do ar.
+  rodadas. Atualizam sozinhas quando você avalia algo (evento → recálculo).
+- **Notificações** (TP4): sino com aviso quando alguém responde ou vota na sua
+  avaliação, e feed com as últimas avaliações da comunidade.
 
 ---
 
@@ -179,18 +246,25 @@ acharem e conversarem.
 ```
 projeto-bloco/
 ├── pom.xml                            → POM pai (projeto multi-módulo)
+├── Dockerfile                         → imagem dos serviços Java (--build-arg MODULE=...)
+├── docker-compose.yml                 → sistema completo + observabilidade
 ├── services/                          → APLICAÇÕES DE NEGÓCIO
-│   ├── gamelog/                       → Monólito GameLog (8080)
-│   │   └── data/                      → banco H2 do monólito
-│   └── recommendation-service/        → MICROSSERVIÇO (8081)
-│       └── data/                      → banco H2 PRÓPRIO, separado
-├── platform/                          → INFRAESTRUTURA SPRING CLOUD
+│   ├── gamelog/                       → Monólito GameLog (8080), publica eventos
+│   ├── recommendation-service/        → Recomendações (8081), consome eventos
+│   └── notification-service/          → Notificações (8082), consome eventos
+├── platform/                          → INFRAESTRUTURA
 │   ├── config-server/                 → Spring Cloud Config (8888)
 │   ├── discovery-server/              → Eureka (8761)
-│   └── api-gateway/                   → Spring Cloud Gateway (8090)
+│   ├── api-gateway/                   → Spring Cloud Gateway (8090)
+│   └── observability/                 → biblioteca: filtros de ruído do tracing
 ├── config-repo/                       → .yml servidos pelo Config Server
-├── frontend/                          → Interface (React)
+├── k8s/                               → manifestos Kubernetes (kustomize)
+├── ops/                               → Postgres, Prometheus, Grafana (config)
+├── scripts/                           → smoke, falhas, rolling update, deploy local
+├── .github/workflows/                 → CI e CD
+├── frontend/                          → Interface (React) + Dockerfile nginx
 ├── docs/                              → Documentação
+├── CHANGELOG.md
 └── README.md
 ```
 
@@ -207,13 +281,20 @@ de coisa — o que deixou de ser verdade no TP3.
 - **Microsserviço e arquitetura distribuída** (modelo de domínio atualizado,
   topologia, Spring Cloud, endpoints, resiliência, roteiro de demonstração):
   [`docs/MICROSSERVICO.md`](docs/MICROSSERVICO.md)
+- **Arquitetura orientada a eventos** (TP4: topologia RabbitMQ, catálogo de
+  eventos, outbox, padrões de mensagem, prós e contras):
+  [`docs/EVENTOS.md`](docs/EVENTOS.md)
+- **Implantação e manutenção** (TP5: Docker, Kubernetes, monitoramento, CI/CD):
+  [`docs/IMPLANTACAO.md`](docs/IMPLANTACAO.md)
 
 ---
 
 ## Endpoints da API
 
 Todos passam pelo **gateway** em `http://localhost:8090`, que roteia
-`/api/recommendations/**` para o microsserviço e o resto para o monólito.
+`/api/recommendations/**` para o microsserviço de recomendações,
+`/api/notifications/**` para o de notificações e o resto para o monólito. Os
+endpoints de notificação estão em [`docs/EVENTOS.md`](docs/EVENTOS.md#10-endpoints-novos).
 
 ### Monólito
 
@@ -233,7 +314,7 @@ Todos passam pelo **gateway** em `http://localhost:8090`, que roteia
 | GET | `/api/users/{username}` | não | Perfil público + avaliações |
 | GET | `/api/users/{username}/collection` | não | Coleção pública do usuário |
 | GET | `/api/users/me` | **sim** | Perfil de quem está logado |
-| GET | `/api/users/{username}/game-activity` | não | **TP3** — jogos avaliados com gênero e nota + ids da coleção. Existe pro microsserviço; é o único endpoint novo no monólito. |
+| GET | `/api/users/{username}/game-activity` | não | **TP3** — jogos avaliados com gênero e nota + ids da coleção. Mantido por compatibilidade; desde o TP4 o microsserviço usa eventos. |
 
 ### Microsserviço de recomendações
 
@@ -256,27 +337,42 @@ bancos independentes**: nenhuma tabela em comum entre os dois serviços.
 
 ## Testes
 
-**101 testes.** Da raiz do projeto, os cinco módulos Java de uma vez:
+**321 testes automatizados** + testes de sistema. Da raiz do projeto, todos os
+módulos Java de uma vez (os de integração sobem um RabbitMQ em container, então
+precisam do Docker):
 
 ```bash
-mvn test          # 86 testes (monólito + microsserviço + gateway + config + eureka)
+mvn verify        # 267 testes
 ```
 
 E o front-end:
 
 ```bash
 cd frontend
-npm test          # 15 testes
+npm test          # 54 testes
 ```
 
 | Módulo | Testes | O que cobre |
 |--------|-------:|-------------|
-| `services/gamelog` (monólito) | 30 | persistência do TP2 (21) + projeções JPQL novas + endpoint `game-activity` |
-| `services/recommendation-service` | 44 | perfil de gosto, algoritmo, repositórios, serviço, tradução de payload, contrato HTTP |
-| `platform/api-gateway` | 8 | roteamento e ordem das rotas, filtro de autenticação, dedupe de CORS |
-| `platform/config-server` | 2 | serve de fato as propriedades do `config-repo` |
+| `services/gamelog` (monólito) | 175 | persistência, regras de negócio, outbox (publicação, relay, tracing), integração com RabbitMQ |
+| `services/recommendation-service` | 56 | algoritmo, projeção por eventos (idempotência, ordem), comando de recálculo, DLQ, contrato HTTP |
+| `services/notification-service` | 16 | regras de quem notificar, idempotência, fan-out, contrato HTTP |
+| `platform/api-gateway` | 11 | roteamento, filtro de autenticação, CORS |
+| `platform/observability` | 4 | filtros de ruído do tracing |
+| `platform/config-server` | 3 | serve de fato as propriedades do `config-repo` |
 | `platform/discovery-server` | 2 | o registro responde e não se registra em si mesmo |
-| `frontend` | 15 | textos da tela de recomendações e leitura dos gêneros do catálogo |
+| `frontend` | 54 | textos, formatação e leitura de dados das telas |
+
+Com o sistema no ar (compose ou Kubernetes):
+
+```bash
+./scripts/smoke-test.sh          # fluxo de ponta a ponta pela API
+./scripts/resilience-test.sh     # derruba RabbitMQ, consumidor e monólito (só compose)
+BASE_URL=http://localhost:30080 ./scripts/k8s-rollout-test.sh   # rolling update sem perda
+```
+
+Tudo isso roda no GitHub Actions a cada push (ver
+[`docs/IMPLANTACAO.md`](docs/IMPLANTACAO.md#5-cicd-github-actions)).
 
 ### Testes da camada de persistência (TP2)
 
@@ -313,12 +409,12 @@ guardada no banco pra não buscar de novo.
 
 ## Observação: rodar o monólito em outra porta
 
-Se a 8080 estiver ocupada, suba assim — **evite a 8081, 8090, 8761 e 8888**, que
-são dos outros serviços:
+Se a 8080 estiver ocupada, suba assim — **evite a 8081, 8082, 8090, 8761 e 8888**,
+que são dos outros serviços:
 
 ```bash
 cd services/gamelog
-mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8082
+mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8083
 ```
 
 Com a stack distribuída no ar, **nada mais precisa mudar**: o gateway acha o
@@ -331,5 +427,5 @@ Rodando só o monólito, sem a stack, aponte o front pra ele (o front lê
 
 ```bash
 # Windows PowerShell
-$env:VITE_API_URL="http://localhost:8082"; npm run dev
+$env:VITE_API_URL="http://localhost:8083"; npm run dev
 ```

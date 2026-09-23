@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.history.RevisionMetadata;
 import org.springframework.data.history.Revisions;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,15 @@ import org.springframework.transaction.support.TransactionTemplate;
 // a transacao do teste (NOT_SUPPORTED) e abre transacoes reais na mao com o
 // TransactionTemplate, uma por operacao, igual acontece em producao (cada
 // requisicao HTTP = uma transacao = uma revisao).
+//
+// Efeito colateral de commitar de verdade: os dados FICAM no banco em memoria,
+// que e compartilhado por todas as classes @DataJpaTest com o mesmo contexto. O
+// @DirtiesContext descarta o contexto (e o banco) ao fim da classe. Sem ele, o
+// GameRepositoryTest contava 5 jogos em vez de 4 quando rodava depois desta
+// classe - o que so acontecia no Linux do CI, onde a ordem das classes muda.
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@DirtiesContext
 class ReviewHistoryTest {
 
     @Autowired

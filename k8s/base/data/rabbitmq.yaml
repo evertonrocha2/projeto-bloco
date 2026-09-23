@@ -1,0 +1,69 @@
+# RabbitMQ: StatefulSet pelo mesmo motivo do Postgres - filas duraveis moram no
+# disco, e o pod substituto precisa achar as mensagens que ficaram.
+#
+# Nome de host fixo (RABBITMQ_NODENAME): o RabbitMQ grava os dados numa pasta
+# com o nome do no. Com o hostname aleatorio de um pod comum, cada restart
+# criaria um no "novo" e as filas duraveis do anterior ficariam orfas no disco.
+# Em producao: RabbitMQ Cluster Operator, 3 nos e quorum queues.
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+spec:
+  selector: { app: rabbitmq }
+  ports:
+    - { name: amqp, port: 5672 }
+    - { name: management, port: 15672 }
+    - { name: prometheus, port: 15692 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+spec:
+  serviceName: rabbitmq
+  replicas: 1
+  selector:
+    matchLabels: { app: rabbitmq }
+  template:
+    metadata:
+      labels: { app: rabbitmq }
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.13-management-alpine
+          ports:
+            - { name: amqp, containerPort: 5672 }
+            - { name: management, containerPort: 15672 }
+            - { name: prometheus, containerPort: 15692 }
+          env:
+            - name: RABBITMQ_NODENAME
+              value: rabbit@localhost
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: RABBITMQ_USERNAME } }
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: RABBITMQ_PASSWORD } }
+          # Sonda TCP na porta AMQP, e nao "rabbitmq-diagnostics": cada chamada do
+          # CLI sobe uma VM Erlang inteira. Com sonda a cada 10 s, o pod ficava
+          # com um core inteiro ocupado so respondendo "estou vivo" (medido com
+          # kubectl top: ~1000m). E tambem o que o RabbitMQ Cluster Operator usa.
+          readinessProbe:
+            tcpSocket: { port: amqp }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: amqp }
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/rabbitmq }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests: { storage: 1Gi }

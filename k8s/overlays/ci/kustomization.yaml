@@ -1,0 +1,24 @@
+# Cluster efemero do pipeline de CD (kind no runner do GitHub Actions).
+#
+# O runner tem 4 vCPU / 16 GB: uma replica de cada servico basta pra provar que
+# os manifestos sobem e o sistema funciona. A imagem de cada servico e trocada
+# pelo pipeline (sed em "newTag: latest") pra tag do commit no GHCR - o que
+# roda no teste e exatamente o que foi publicado.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Parte do overlay local (mesmos NodePorts, que o kind do CI mapeia pro host).
+resources:
+  - ../local
+
+patches:
+  - path: single-replica.yaml
+
+images:
+  - { name: gamelog/config-server, newName: ghcr.io/evertonrocha2/gamelog-config-server, newTag: latest }
+  - { name: gamelog/discovery-server, newName: ghcr.io/evertonrocha2/gamelog-discovery-server, newTag: latest }
+  - { name: gamelog/api-gateway, newName: ghcr.io/evertonrocha2/gamelog-api-gateway, newTag: latest }
+  - { name: gamelog/gamelog, newName: ghcr.io/evertonrocha2/gamelog-gamelog, newTag: latest }
+  - { name: gamelog/recommendation-service, newName: ghcr.io/evertonrocha2/gamelog-recommendation-service, newTag: latest }
+  - { name: gamelog/notification-service, newName: ghcr.io/evertonrocha2/gamelog-notification-service, newTag: latest }
+  - { name: gamelog/frontend, newName: ghcr.io/evertonrocha2/gamelog-frontend, newTag: latest }

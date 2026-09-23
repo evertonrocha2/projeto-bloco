@@ -1,0 +1,3 @@
+# Scripts de shell rodam em Linux (runner do CI, containers): com CRLF o bash
+# le "pipefail\r" e aborta. O Git grava LF independente do sistema de quem commita.
+*.sh text eol=lf

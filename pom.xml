@@ -40,6 +40,9 @@
              A 1.21.4 negocia a versao da API e funciona nos dois lados: na maquina
              de desenvolvimento e no runner do GitHub Actions. -->
         <testcontainers.version>1.21.4</testcontainers.version>
+        <!-- TP5: appender que empurra os logs pro Loki. A linha 1.5 e a ultima com
+             a sintaxe de configuracao usada em logback-spring.xml. -->
+        <loki-logback-appender.version>1.5.2</loki-logback-appender.version>
     </properties>
 
     <!-- A estrutura de pastas separa APLICACOES de INFRAESTRUTURA.
@@ -63,7 +66,63 @@
         <module>platform/config-server</module>
         <module>platform/discovery-server</module>
         <module>platform/api-gateway</module>
+        <!-- TP5: biblioteca comum de observabilidade (nao e aplicacao) -->
+        <module>platform/observability</module>
     </modules>
+
+    <!-- TP5: base de observabilidade comum a TODOS os servicos.
+
+         Declarada no pai, e nao em cada modulo, pelo mesmo motivo das versoes: um
+         servico sem metrica ou sem trace e um buraco no painel justamente na hora
+         em que se precisa dele. Servico novo herda tudo sem lembrar de nada.
+
+           actuator ................ health (probes do Kubernetes), info, metricas
+           prometheus .............. /actuator/prometheus, raspado pelo Prometheus
+           tracing (brave) ......... traceId/spanId em cada requisicao e mensagem,
+                                     propagados em header HTTP e AMQP
+           zipkin reporter ......... envia os spans pro Zipkin
+           loki appender ........... envia os logs pro Loki (perfil "loki") -->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.loki4j</groupId>
+            <artifactId>loki-logback-appender</artifactId>
+            <version>${loki-logback-appender.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Nos testes nao ha Zipkin nem Loki: sem isto cada teste tentaria
+                 exportar spans pra localhost:9411 e encheria o log de conexao
+                 recusada. O comportamento de tracing que importa (propagacao pelo
+                 outbox) e testado com o Tracer em memoria. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <management.tracing.enabled>false</management.tracing.enabled>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencyManagement>
         <dependencies>

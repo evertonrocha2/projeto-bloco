@@ -14,3 +14,9 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+
+# TP5: o trafego do Eureka e so heartbeat e consulta de registro, a cada poucos
+# segundos, de cada instancia. Tracear isso enterraria os traces de negocio.
+management:
+  tracing:
+    enabled: false

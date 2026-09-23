@@ -11,7 +11,7 @@ spring:
     # aplicacao registra um aviso e sobe com a configuracao local, em vez de
     # falhar. Sem isso, a ordem de startup viraria uma armadilha - um servico
     # fora do ar derrubaria todos os outros em cascata.
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
 
 eureka:
   client:
@@ -31,3 +31,20 @@ eureka:
     # na lista por minutos, o que confunde bastante numa demonstracao.
     enable-self-preservation: false
     eviction-interval-timer-in-ms: 5000
+
+# TP5. Repetido do config-repo/discovery-server.yml pelo mesmo motivo do bloco
+# acima: tem que valer tambem quando o Eureka sobe sem o Config Server.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: discovery-server
+  tracing:
+    enabled: false

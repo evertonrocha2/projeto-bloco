@@ -1,0 +1,96 @@
+# Monolito. UMA replica, e com estrategia Recreate, por dois motivos concretos:
+#
+#   1. Uploads de imagem ficam em disco (volume ReadWriteOnce). Dois pods nao
+#      montam o mesmo volume RWO, e cada um teria so metade das imagens.
+#   2. O OutboxRelay publica em ordem de id. Duas replicas lendo a mesma tabela
+#      disputariam as linhas - os consumidores aguentam (sao idempotentes e usam
+#      last-writer-wins), mas a ordem deixaria de ser garantida.
+#
+# Escalar o monolito exigiria antes: uploads num storage de objetos (S3/MinIO) e
+# um relay com lock (SELECT ... FOR UPDATE SKIP LOCKED ou lider eleito).
+# Registrado como limitacao em docs/IMPLANTACAO.md.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gamelog
+spec:
+  selector: { app: gamelog }
+  ports:
+    - { name: http, port: 8080 }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gamelog-uploads
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests: { storage: 1Gi }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamelog
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: { app: gamelog }
+  template:
+    metadata:
+      labels: { app: gamelog }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+    spec:
+      securityContext: { runAsNonRoot: true, fsGroup: 10001 }
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: gamelog
+          image: gamelog/gamelog:dev
+          ports:
+            - { name: http, containerPort: 8080 }
+          envFrom:
+            - configMapRef: { name: gamelog-env }
+          env:
+            - { name: DB_URL, value: "jdbc:postgresql://postgres:5432/gamelog" }
+            - name: DB_USERNAME
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: DB_USERNAME } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: DB_PASSWORD } }
+            - name: RABBITMQ_USERNAME
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: RABBITMQ_USERNAME } }
+            - name: RABBITMQ_PASSWORD
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: RABBITMQ_PASSWORD } }
+            - name: JWT_SECRET
+              valueFrom: { secretKeyRef: { name: gamelog-secrets, key: JWT_SECRET } }
+          # Saida limpa do balanceamento: marca a instancia DOWN no Eureka e espera
+          # os caches dos clientes (5 s de registro + 5 s do load balancer) antes
+          # de o SIGTERM chegar. Sem isto o Spring para o servidor web ANTES de se
+          # desregistrar, e o gateway ainda manda requisicao pro pod que saiu
+          # (medido: 2 de 8 leituras com erro durante um rollout).
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "wget -q -O /dev/null --header 'Content-Type: application/json' --post-data '{\"status\":\"DOWN\"}' http://127.0.0.1:8080/actuator/serviceregistry; sleep 12"]
+          startupProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 200m, memory: 448Mi }
+            limits: { memory: 768Mi }
+          securityContext: { allowPrivilegeEscalation: false }
+          volumeMounts:
+            - { name: uploads, mountPath: /app/uploads }
+      volumes:
+        - name: uploads
+          persistentVolumeClaim: { claimName: gamelog-uploads }

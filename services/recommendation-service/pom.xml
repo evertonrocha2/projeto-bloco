@@ -34,6 +34,12 @@
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- TP5: PostgreSQL em Docker/Kubernetes; H2 local e nos testes. -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- Validacao dos corpos de requisicao (@NotNull no feedback) -->
         <dependency>
@@ -98,6 +104,12 @@
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- TP5: filtros de ruido do tracing (actuator, heartbeat do Eureka) -->
+        <dependency>
+            <groupId>com.gamelog</groupId>
+            <artifactId>observability</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

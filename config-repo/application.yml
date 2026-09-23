@@ -11,9 +11,16 @@ eureka:
   client:
     service-url:
       # Onde os servicos se registram e onde procuram uns aos outros.
-      defaultZone: http://localhost:8761/eureka/
+      # TP5: placeholder AQUI, e nao so no arquivo local. Configuracao vinda do
+      # Config Server tem prioridade sobre o application.yml do servico, entao um
+      # valor fixo neste arquivo venceria o do container e todo mundo tentaria
+      # achar o Eureka em "localhost" - que, dentro de um container, e ele mesmo.
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
+    # TP5: o padrao e 30 s. Num rolling update do Kubernetes, o gateway seguiria
+    # mandando requisicao pro pod que ja saiu durante ate meio minuto.
+    registry-fetch-interval-seconds: 5
   instance:
     # Em ambiente local o hostname da maquina as vezes nao resolve; o IP e mais
     # confiavel pra um servico achar o outro.
@@ -25,16 +32,82 @@ management:
       exposure:
         # health: usado pra saber se o servico esta de pe.
         # refresh: e o que permite recarregar a configuracao sem reiniciar.
-        include: health,info,refresh
+        # prometheus (TP5): as metricas no formato que o Prometheus raspa.
+        # serviceregistry (TP5): o preStop do Kubernetes marca a instancia como
+        # DOWN no Eureka antes de o pod parar (ver k8s/base/services).
+        include: health,info,refresh,prometheus,serviceregistry
   endpoint:
     health:
       show-details: always
+      # TP5: /actuator/health/liveness e /actuator/health/readiness, que o
+      # Kubernetes usa nas probes. Nenhuma das duas inclui o RabbitMQ, e isso e
+      # deliberado: o broker fora do ar NAO impede os servicos de atender HTTP (o
+      # monolito acumula no outbox; os consumidores respondem da projecao local).
+      # Uma probe que olhasse o broker transformaria a queda dele em queda de tudo
+      # - exatamente o acoplamento que o TP4 removeu. O /actuator/health completo
+      # continua mostrando o rabbit DOWN, pra quem estiver olhando.
+      probes:
+        enabled: true
+  health:
+    # O Eureka nao entra no health: com ele, um Eureka lento derrubaria a
+    # readiness de todos os servicos ao mesmo tempo.
+    discovery:
+      enabled: false
+
+  # --- Observabilidade (TP5) ---
+  tracing:
+    sampling:
+      # 100% em desenvolvimento e na demonstracao. Em producao com trafego real,
+      # algo entre 0.05 e 0.1 - o custo do trace e por requisicao.
+      probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+  metrics:
+    tags:
+      # Toda serie do Prometheus sai com application=<servico>; e o filtro dos
+      # paineis do Grafana.
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        # Histograma em vez de media: permite p95/p99 no Grafana.
+        http.server.requests: true
+  observations:
+    enable:
+      # O OutboxRelay roda a cada 500 ms. Com isto ligado, cada execucao vazia
+      # viraria um trace no Zipkin - 170 mil por dia so de ruido. O trace que
+      # importa (o da requisicao que gerou o evento) e reaberto pelo proprio relay.
+      tasks.scheduled: false
+      # Quatro spans por requisicao so pra dizer "passou pela cadeia de filtros".
+      # O tempo da seguranca continua dentro do span HTTP.
+      spring.security: false
+# TP5: desligamento gracioso. No SIGTERM (rolling update, scale down) o servico
+# para de aceitar requisicao nova, termina as que estao em andamento e so entao
+# encerra; os listeners do RabbitMQ terminam a mensagem atual e devolvem as
+# nao confirmadas pra fila. Nada se perde num deploy.
+server:
+  shutdown: graceful
 
 # TP4: broker comum a todos os servicos que trocam eventos. As variaveis de
 # ambiente (Docker/Kubernetes) tem prioridade; o padrao serve pro ambiente local.
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  cloud:
+    loadbalancer:
+      cache:
+        # Mesmo motivo do registry-fetch-interval acima.
+        ttl: 5s
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
+    # TP5: o trace viaja no header da mensagem (traceparent). Sem isto, cada
+    # consumidor comecaria um trace novo e o caminho requisicao -> evento ->
+    # projecao ficaria partido em pedacos sem relacao no Zipkin.
+    template:
+      observation-enabled: true
+    listener:
+      simple:
+        observation-enabled: true

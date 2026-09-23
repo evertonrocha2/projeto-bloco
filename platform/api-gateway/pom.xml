@@ -53,6 +53,12 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- TP5: filtros de ruido do tracing (actuator, heartbeat do Eureka) -->
+        <dependency>
+            <groupId>com.gamelog</groupId>
+            <artifactId>observability</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

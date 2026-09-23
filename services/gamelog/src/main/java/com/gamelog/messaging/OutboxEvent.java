@@ -67,6 +67,15 @@ public class OutboxEvent {
     @Column(name = "last_error", length = 500)
     private String lastError;
 
+    // TP5: o trace da requisicao que gerou o evento. O relay roda em outra thread,
+    // meio segundo depois; sem guardar isto, o trace terminaria no commit e a
+    // mensagem comecaria um trace novo, desligado do POST que a causou.
+    @Column(name = "trace_id", length = 32)
+    private String traceId;
+
+    @Column(name = "span_id", length = 16)
+    private String spanId;
+
     protected OutboxEvent() {
     }
 
@@ -77,6 +86,19 @@ public class OutboxEvent {
         this.aggregateId = aggregateId;
         this.payload = payload;
         this.occurredAt = occurredAt;
+    }
+
+    public void attachTrace(String traceId, String spanId) {
+        this.traceId = traceId;
+        this.spanId = spanId;
+    }
+
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public String getSpanId() {
+        return spanId;
     }
 
     public void markPublished(Instant when) {

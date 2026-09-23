@@ -21,7 +21,12 @@
 // Exportado porque o envio de imagem nao pode passar pelo request() abaixo: ele
 // fixa Content-Type: application/json, e multipart precisa que o navegador monte o
 // cabecalho com o boundary. O endereco continua definido num lugar so.
-export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090'
+//
+// TP5: "??" e nao "||". Na imagem Docker o build usa VITE_API_URL="" (vazio), que
+// significa MESMA ORIGEM: o nginx que serve o front repassa /api pro gateway. Com
+// "||" a string vazia cairia no localhost:8090 - que, no navegador de quem acessa
+// o cluster, nao e o gateway de ninguem.
+export const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8090'
 
 // O token JWT fica no localStorage pra sobreviver a um F5 na pagina.
 export function getToken() {

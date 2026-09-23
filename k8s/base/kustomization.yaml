@@ -1,0 +1,81 @@
+# Base do GameLog no Kubernetes. Os overlays (k8s/overlays/*) ajustam imagem,
+# replicas e exposicao por ambiente; aqui fica o que e igual em todos.
+#
+#   kubectl apply -k k8s/overlays/local
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gamelog
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: gamelog
+    includeSelectors: false
+
+resources:
+  - namespace.yaml
+  # ConfigMaps gerados a partir dos arquivos do repositorio (fonte unica).
+  - ../../config-repo
+  - ../../ops
+  # Dados
+  - data/postgres.yaml
+  - data/rabbitmq.yaml
+  # Observabilidade
+  - observability/zipkin.yaml
+  - observability/loki.yaml
+  - observability/prometheus.yaml
+  - observability/grafana.yaml
+  # Plataforma Spring Cloud
+  - platform/config-server.yaml
+  - platform/discovery-server.yaml
+  - platform/api-gateway.yaml
+  # Negocio
+  - services/gamelog.yaml
+  - services/recommendation-service.yaml
+  - services/notification-service.yaml
+  - services/frontend.yaml
+  # Escala automatica
+  - autoscaling.yaml
+
+# Desliga as variaveis de ambiente "legadas" que o Kubernetes injeta pra cada
+# Service do namespace (<SERVICO>_PORT=tcp://ip:porta). Com um Service chamado
+# "rabbitmq", todo pod recebia RABBITMQ_PORT=tcp://10.96.x.x:5672 - exatamente o
+# nome do placeholder ${RABBITMQ_PORT:5672} do config-repo - e os servicos
+# morriam no startup com NumberFormatException. A descoberta aqui e por DNS.
+patches:
+  - target: { kind: Deployment }
+    patch: |-
+      - op: add
+        path: /spec/template/spec/enableServiceLinks
+        value: false
+  - target: { kind: StatefulSet }
+    patch: |-
+      - op: add
+        path: /spec/template/spec/enableServiceLinks
+        value: false
+
+configMapGenerator:
+  # Enderecos internos: o DNS do Kubernetes resolve <servico>.<namespace>.
+  - name: gamelog-env
+    literals:
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_URL=http://discovery-server:8761/eureka/
+      - RABBITMQ_HOST=rabbitmq
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+      - SPRING_PROFILES_ACTIVE=loki
+
+# ATENCAO: valores de DESENVOLVIMENTO, versionados de proposito pra que o
+# "kubectl apply -k" funcione sem passo manual. Num ambiente real este bloco sai
+# daqui e o Secret vem de fora do Git (Sealed Secrets, External Secrets com o
+# cofre da nuvem, ou "kubectl create secret" no pipeline) - ver
+# docs/IMPLANTACAO.md.
+secretGenerator:
+  - name: gamelog-secrets
+    literals:
+      - DB_USERNAME=gamelog
+      - DB_PASSWORD=gamelog-dev
+      - RABBITMQ_USERNAME=gamelog
+      - RABBITMQ_PASSWORD=gamelog-dev
+      - JWT_SECRET=troque-este-segredo-em-producao-0123456789abcdef
+      - GRAFANA_PASSWORD=admin

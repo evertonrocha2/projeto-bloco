@@ -1,0 +1,12 @@
+**/target/
+**/node_modules/
+**/dist/
+**/data/
+**/uploads/
+frontend/
+k8s/
+docs/
+.git/
+.github/
+*.pdf
+*.log

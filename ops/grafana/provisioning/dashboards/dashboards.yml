@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: gamelog
+    folder: GameLog
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

@@ -22,10 +22,30 @@ spring:
           # aplicacao e iniciada: da raiz do projeto (java -jar) ou da pasta do
           # modulo (mvn spring-boot:run, e tambem os testes). O Config Server
           # ignora em silencio as localizacoes que nao existem.
+          # TP5: na imagem Docker a pasta e copiada pra /app/config-repo, que e a
+          # primeira da lista; no Kubernetes ela vem de um ConfigMap montado no
+          # mesmo lugar - trocar configuracao nao exige rebuild da imagem.
           search-locations: file:./config-repo,file:../../config-repo
 
 # Nao registra no Eureka: o Config Server e a raiz da arvore de inicializacao,
 # entao ele nao pode depender de ninguem pra subir.
 eureka:
   client:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: config-server
+  # Cada servico busca configuracao uma vez no startup; nao ha fluxo de negocio
+  # aqui pra acompanhar.
+  tracing:
     enabled: false

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.history.Revisions;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +22,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 // Historico da colecao: o caso de uso classico e acompanhar a jornada com um
 // jogo ("adicionei querendo jogar -> comecei -> zerei"). Cada transacao de
 // update vira uma revisao. Ver o comentario no ReviewHistoryTest sobre por que
-// o teste desliga a propria transacao e commita na mao.
+// o teste desliga a propria transacao e commita na mao - e por que, commitando,
+// precisa do @DirtiesContext.
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
+@DirtiesContext
 class CollectionHistoryTest {
 
     @Autowired
